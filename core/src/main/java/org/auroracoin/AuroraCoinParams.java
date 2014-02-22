@@ -43,12 +43,13 @@ public class AuroraCoinParams extends NetworkParameters {
         packetMagic = 0xfbc0b6dbL;
         dumpedPrivateKeyHeader = 128 + addressHeader;
 
-        targetTimespan = (int)(3.5 * 24 * 60 * 60);
-        interval = targetTimespan/((int)(2.5 * 60));
+        targetTimespan = (int)(8 * 10 * 60);
+	int targetSpacing = (int)(10 * 60);
+        interval = targetTimespan/targetSpacing;
 
         genesisBlock.setDifficultyTarget(0x1e0ffff0L);
-        genesisBlock.setTime(1317972665L);
-        genesisBlock.setNonce(2084524493L);
+        genesisBlock.setTime(1390598806L);
+        genesisBlock.setNonce(538548L);
         genesisBlock.removeTransaction(0);
         Transaction t = new Transaction(this);
         try {
@@ -56,30 +57,26 @@ public class AuroraCoinParams extends NetworkParameters {
             //
             //   "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
             byte[] bytes = Hex.decode
-                    ("04ffff001d0104404e592054696d65732030352f4f63742f32303131205374657665204a6f62732c204170706c65e280997320566973696f6e6172792c2044696573206174203536");
+                    ("04ffff001d01043756697369722031302e206f6b746f626572203230303820476a616c646579726973686f6674207365747420612049736c656e64696e6761");
             t.addInput(new TransactionInput(this, t, bytes));
             ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
             Script.writeBytes(scriptPubKeyBytes, Hex.decode
-                    ("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9"));
+                    ("4104a5814813115273a109cff99907ba4a05d951873dae7acb6c973d0c9e7c88911a3dbc9aa600deac241b91707e7b4ffb30ad91c8e56e695a1ddf318592988afe0aac"));
             scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
-            t.addOutput(new TransactionOutput(this, t, Utils.toNanoCoins(50, 0), scriptPubKeyBytes.toByteArray()));
+            t.addOutput(new TransactionOutput(this, t, Utils.toNanoCoins(1, 0), scriptPubKeyBytes.toByteArray()));
         } catch (Exception e) {
             // Cannot happen.
             throw new RuntimeException(e);
         }
         genesisBlock.addTransaction(t);
         String genesisHash = genesisBlock.getHashAsString();
-        checkState(genesisHash.equals("12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"),
+        checkState(genesisHash.equals("8957e5e8d2f0e90c42e739ec62fcc5dd21064852da64b6528ebd46567f222169"),
                 genesisBlock);
 
         subsidyDecreaseBlockCount = 840000;
 
         dnsSeeds = new String[] {
-                "dnsseed.litecointools.com",
-                "dnsseed.litecoinpool.org",
-                "dnsseed.ltc.xurious.com",
-                "dnsseed.koin-project.com",
-                "dnsseed.weminemnc.com"
+                "auroraexplorer.cave.net"
         };
     }
 
