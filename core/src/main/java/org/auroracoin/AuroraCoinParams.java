@@ -37,7 +37,7 @@ public class AuroraCoinParams extends NetworkParameters {
         super();
         id = "org.auroracoin.production";
         proofOfWorkLimit = Utils.decodeCompactBits(0x1e0fffffL);
-        addressHeader = 48;
+        addressHeader = 23;
         acceptableAddressCodes = new int[] { 48 };
         port = 12340;
         packetMagic = 0xfbc0b6dbL;
@@ -70,13 +70,13 @@ public class AuroraCoinParams extends NetworkParameters {
         }
         genesisBlock.addTransaction(t);
         String genesisHash = genesisBlock.getHashAsString();
-        checkState(genesisHash.equals("8957e5e8d2f0e90c42e739ec62fcc5dd21064852da64b6528ebd46567f222169"),
-                genesisBlock);
+        //checkState(genesisHash.equals("8957e5e8d2f0e90c42e739ec62fcc5dd21064852da64b6528ebd46567f222169"),
+        //        genesisBlock);
 
         subsidyDecreaseBlockCount = 840000;
 
         dnsSeeds = new String[] {
-                "auroraexplorer.cave.net"
+                "auroraexplorer.atorox.net"
         };
     }
 
@@ -118,6 +118,6 @@ public class AuroraCoinParams extends NetworkParameters {
 
     static {
         NetworkParameters.registerParams(get());
-        NetworkParameters.PROTOCOL_VERSION = 70002;
+        NetworkParameters.PROTOCOL_VERSION = 1000000;
     }
 }
