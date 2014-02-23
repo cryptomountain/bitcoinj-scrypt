@@ -40,7 +40,8 @@ public class AuroraCoinParams extends NetworkParameters {
         addressHeader = 23;
         acceptableAddressCodes = new int[] { 48 };
         port = 12340;
-        packetMagic = 0xfbc0b6dbL;
+	//unsigned char pchMessageStart[4] = { 0xfd, 0xa4, 0xdc, 0x6c }; 
+        packetMagic = 0xfda4dc6cL;
         dumpedPrivateKeyHeader = 128 + addressHeader;
 
         targetTimespan = (int)(8 * 10 * 60);
@@ -70,7 +71,12 @@ public class AuroraCoinParams extends NetworkParameters {
         }
         genesisBlock.addTransaction(t);
         String genesisHash = genesisBlock.getHashAsString();
+	// This is the transaction hash (merkle root)
         //checkState(genesisHash.equals("8957e5e8d2f0e90c42e739ec62fcc5dd21064852da64b6528ebd46567f222169"),
+        //        genesisBlock);
+
+	// This is the block hash
+        //checkState(genesisHash.equals("2a8e100939494904af825b488596ddd536b3a96226ad02e0f7ab7ae472b27a8e"),
         //        genesisBlock);
 
         subsidyDecreaseBlockCount = 840000;
