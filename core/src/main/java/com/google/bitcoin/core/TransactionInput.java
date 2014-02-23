@@ -68,6 +68,18 @@ public class TransactionInput extends ChildMessage implements Serializable {
         length = 40 + (scriptBytes == null ? 1 : VarInt.sizeOf(scriptBytes.length) + scriptBytes.length);
     }
 
+    /**
+     * Creates an input that connects to nothing - used only in creation of coinbase transactions.
+     */
+    public TransactionInput(NetworkParameters params, Transaction parentTransaction, long sequence, byte[] scriptBytes) {
+        super(params);
+        this.scriptBytes = scriptBytes;
+        this.sequence = sequence;
+        this.outpoint = new TransactionOutPoint(params, sequence, (Transaction)null);
+        this.parentTransaction = parentTransaction;
+        length = 40 + (scriptBytes == null ? 1 : VarInt.sizeOf(scriptBytes.length) + scriptBytes.length);
+    }
+
     public TransactionInput(NetworkParameters params, @Nullable Transaction parentTransaction, byte[] scriptBytes,
                             TransactionOutPoint outpoint) {
         super(params);
@@ -148,8 +160,8 @@ public class TransactionInput extends ChildMessage implements Serializable {
      */
     public boolean isCoinBase() {
         maybeParse();
-        return outpoint.getHash().equals(Sha256Hash.ZERO_HASH) &&
-                (outpoint.getIndex() & 0xFFFFFFFFL) == 0xFFFFFFFFL;  // -1 but all is serialized to the wire as unsigned int.
+        return outpoint.getHash().equals(Sha256Hash.ZERO_HASH);
+	//&& (outpoint.getIndex() & 0xFFFFFFFFL) == 0xFFFFFFFFL;  // -1 but all is serialized to the wire as unsigned int.
     }
 
     /**

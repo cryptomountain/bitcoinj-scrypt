@@ -586,7 +586,7 @@ public class Transaction extends ChildMessage implements Serializable {
             String script;
             String script2;
             try {
-                script = inputs.get(0).getScriptSig().toString();
+                script = inputs.get(0).getScriptSig().toString() + Long.toString(inputs.get(0).getSequenceNumber());
                 script2 = outputs.get(0).getScriptPubKey().toString();
             } catch (ScriptException e) {
                 script = "???";

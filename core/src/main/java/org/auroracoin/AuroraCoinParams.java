@@ -40,7 +40,6 @@ public class AuroraCoinParams extends NetworkParameters {
         addressHeader = 23;
         acceptableAddressCodes = new int[] { 48 };
         port = 12340;
-	//unsigned char pchMessageStart[4] = { 0xfd, 0xa4, 0xdc, 0x6c }; 
         packetMagic = 0xfda4dc6cL;
         dumpedPrivateKeyHeader = 128 + addressHeader;
 
@@ -48,7 +47,7 @@ public class AuroraCoinParams extends NetworkParameters {
 	int targetSpacing = (int)(10 * 60);
         interval = targetTimespan/targetSpacing;
 
-        genesisBlock.setDifficultyTarget(0x1e0ffff0L);
+        genesisBlock.setDifficultyTarget(0x1e0fffffL);
         genesisBlock.setTime(1390598806L);
         genesisBlock.setNonce(538548L);
         genesisBlock.removeTransaction(0);
@@ -57,12 +56,16 @@ public class AuroraCoinParams extends NetworkParameters {
             // A script containing the difficulty bits and the following message:
             //
             //   "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
+	    // const char* pszTimestamp = "Visir 10. oktober 2008 Gjaldeyrishoft sett a Islendinga";
             byte[] bytes = Hex.decode
                     ("04ffff001d01043756697369722031302e206f6b746f626572203230303820476a616c646579726973686f6674207365747420612049736c656e64696e6761");
-            t.addInput(new TransactionInput(this, t, bytes));
+	    TransactionInput ti = new TransactionInput(this, t, 4294967295L, bytes);
+	    //TransactionInput ti = new TransactionInput(this, t, bytes);
+            t.addInput(ti);
             ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
             Script.writeBytes(scriptPubKeyBytes, Hex.decode
-                    ("4104a5814813115273a109cff99907ba4a05d951873dae7acb6c973d0c9e7c88911a3dbc9aa600deac241b91707e7b4ffb30ad91c8e56e695a1ddf318592988afe0aac"));
+("04a5814813115273a109cff99907ba4a05d951873dae7acb6c973d0c9e7c88911a3dbc9aa600deac241b91707e7b4ffb30ad91c8e56e695a1ddf318592988afe0a"));
+
             scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
             t.addOutput(new TransactionOutput(this, t, Utils.toNanoCoins(1, 0), scriptPubKeyBytes.toByteArray()));
         } catch (Exception e) {
@@ -71,13 +74,10 @@ public class AuroraCoinParams extends NetworkParameters {
         }
         genesisBlock.addTransaction(t);
         String genesisHash = genesisBlock.getHashAsString();
-	// This is the transaction hash (merkle root)
-        //checkState(genesisHash.equals("8957e5e8d2f0e90c42e739ec62fcc5dd21064852da64b6528ebd46567f222169"),
-        //        genesisBlock);
 
 	// This is the block hash
-        //checkState(genesisHash.equals("2a8e100939494904af825b488596ddd536b3a96226ad02e0f7ab7ae472b27a8e"),
-        //        genesisBlock);
+        checkState(genesisHash.equals("2a8e100939494904af825b488596ddd536b3a96226ad02e0f7ab7ae472b27a8e"),
+                genesisBlock);
 
         subsidyDecreaseBlockCount = 840000;
 
