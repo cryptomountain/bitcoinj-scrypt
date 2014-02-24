@@ -33,12 +33,13 @@ import static com.google.common.base.Preconditions.checkState;
  * and testing of applications and new Bitcoin versions.
  */
 public class AuroraCoinParams extends NetworkParameters {
+    public static final String ID_AURORACOIN = "org.auroracoin.production";
     public AuroraCoinParams() {
         super();
-        id = "org.auroracoin.production";
+        id = ID_AURORACOIN;
         proofOfWorkLimit = Utils.decodeCompactBits(0x1e0fffffL);
         addressHeader = 23;
-        acceptableAddressCodes = new int[] { 48 };
+        acceptableAddressCodes = new int[] { addressHeader };
         port = 12340;
         packetMagic = 0xfda4dc6cL;
         dumpedPrivateKeyHeader = 128 + addressHeader;

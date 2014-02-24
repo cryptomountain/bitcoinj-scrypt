@@ -17,6 +17,9 @@
 package com.google.bitcoin.core;
 
 import javax.annotation.Nullable;
+
+import org.auroracoin.AuroraCoinParams;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -308,6 +311,9 @@ public class VersionMessage extends Message {
      * is available and the memory pool of the remote peer will be queried when the downloadData property is true.
      */
     public boolean isBloomFilteringSupported() {
+    	if (AuroraCoinParams.ID_AURORACOIN.equals(params.getId())) {
+            return clientVersion >= FilteredBlock.MIN_BLOOM_SUPPORT;
+    	}
         return clientVersion >= FilteredBlock.MIN_PROTOCOL_VERSION;
     }
 }

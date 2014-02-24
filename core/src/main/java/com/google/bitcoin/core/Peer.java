@@ -285,6 +285,7 @@ public class Peer extends PeerSocketHandler {
     protected void processMessage(Message m) throws Exception {
         // Allow event listeners to filter the message stream. Listeners are allowed to drop messages by
         // returning null.
+        log.warn("processMessage " + m.toString());
         for (ListenerRegistration<PeerEventListener> registration : eventListeners) {
             // Skip any listeners that are supposed to run in another thread as we don't want to block waiting
             // for it, which might cause circular deadlock.
@@ -450,6 +451,7 @@ public class Peer extends PeerSocketHandler {
         long fastCatchupTimeSecs;
 
         lock.lock();
+        log.warn("Received headers.");
         try {
             if (blockChain == null) {
                 // Can happen if we are receiving unrequested data, or due to programmer error.

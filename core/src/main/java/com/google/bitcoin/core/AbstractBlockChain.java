@@ -25,6 +25,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+
+import org.auroracoin.AuroraCoinParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -844,35 +846,72 @@ public abstract class AbstractBlockChain {
         log.info("Using block " + cursor.getHeight() + " to calculate next difficulty");
         log.info(cursor.toString());
         int timespan = (int) (prev.getTimeSeconds() - blockIntervalAgo.getTimeSeconds());
-        // Limit the adjustment step.
         final int targetTimespan = params.getTargetTimespan();
-        if (timespan < targetTimespan / 4)
-            timespan = targetTimespan / 4;
-        if (timespan > targetTimespan * 4)
-            timespan = targetTimespan * 4;
-
         BigInteger newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
-        log.info("Old diff target: " + newDifficulty);
-        newDifficulty = newDifficulty.multiply(BigInteger.valueOf(timespan));
-        log.info("Times " + timespan);
-        newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
-        log.info("Div by " + targetTimespan);
-
+        if (AuroraCoinParams.ID_AURORACOIN.equals(params.getId())) {
+        	// Auroracoin block difficulty
+        	if ((storedPrev.getHeight()+1) < 135)
+        		newDifficulty = params.getProofOfWorkLimit();
+        	else if ((storedPrev.getHeight()+1) == 121)
+        		newDifficulty = params.genesisBlock.getDifficultyTargetAsInteger();
+        	else {
+	        	
+	        	int nActualTimespan = timespan;
+	        	log.info(" nActualTimespan = " + nActualTimespan + " before bounds\n");        
+	
+		            int nActualTimespanMax = ((targetTimespan*75)/50);
+		            int nActualTimespanMin = ((targetTimespan*50)/75);
+		           
+		       if (nActualTimespan < nActualTimespanMin)
+		           nActualTimespan = nActualTimespanMin;
+		       if (nActualTimespan > nActualTimespanMax)
+		           nActualTimespan = nActualTimespanMax;
+		       
+		       log.info("Old diff target: " + newDifficulty.toString(16));
+		       newDifficulty = newDifficulty.multiply(BigInteger.valueOf(nActualTimespan));
+		       log.info("Times " + nActualTimespan);
+		        log.info("    is  " + newDifficulty.toString(16));
+		       newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
+	           log.info("Div by " + targetTimespan);
+		        log.info("    is  " + newDifficulty.toString(16));
+        	}
+        } else {
+            // Limit the adjustment step.
+	        if (timespan < targetTimespan / 4)
+	            timespan = targetTimespan / 4;
+	        if (timespan > targetTimespan * 4)
+	            timespan = targetTimespan * 4;
+	
+	        log.info("Old diff target: " + newDifficulty.toString(16));
+	        newDifficulty = newDifficulty.multiply(BigInteger.valueOf(timespan));
+	        log.info("Times " + timespan);
+	        log.info("    is  " + newDifficulty.toString(16));
+	        newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
+	        log.info("Div by " + targetTimespan);
+	        log.info("    is  " + newDifficulty.toString(16));
+        }
         if (newDifficulty.compareTo(params.getProofOfWorkLimit()) > 0) {
-            log.info("Difficulty hit proof of work limit: {}", newDifficulty.toString(16));
+            log.info("Difficulty hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
             newDifficulty = params.getProofOfWorkLimit();
+            log.info("Setting to: {}", newDifficulty.toString(16));
+        } else {
+            log.info("Difficulty did not hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
         }
 
         int accuracyBytes = (int) (nextBlock.getDifficultyTarget() >>> 24) - 3;
-        BigInteger receivedDifficulty = nextBlock.getDifficultyTargetAsInteger();
-
+    	
         // The calculated difficulty is to a higher precision than received, so reduce here.
         BigInteger mask = BigInteger.valueOf(0xFFFFFFL).shiftLeft(accuracyBytes * 8);
         newDifficulty = newDifficulty.and(mask);
 
+        BigInteger receivedDifficulty = nextBlock.getDifficultyTargetAsInteger();
         if (newDifficulty.compareTo(receivedDifficulty) != 0)
             throw new VerificationException("Network provided difficulty bits do not match what was calculated: " +
                     receivedDifficulty.toString(16) + " vs " + newDifficulty.toString(16));
+        else {
+        	log.info("Network provided difficulty bits match what was calculated: " +
+                    receivedDifficulty.toString(16) + " vs " + newDifficulty.toString(16));        
+       }
     }
 
     private void checkTestnetDifficulty(StoredBlock storedPrev, Block prev, Block next) throws VerificationException, BlockStoreException {
