@@ -26,7 +26,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  * <p>The retries are exponentially backed off, up to a maximum interval.  On success the back off interval is reset.</p>
  */
 public class ExponentialBackoff implements Comparable<ExponentialBackoff> {
-    public static final int DEFAULT_INITIAL_MILLIS = 100;
+    public static final int DEFAULT_INITIAL_MILLIS = 1000;
     public static final float DEFAULT_MULTIPLIER = 1.1f;
     public static final int DEFAULT_MAXIMUM_MILLIS = 30 * 1000;
 

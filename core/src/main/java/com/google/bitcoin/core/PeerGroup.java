@@ -987,6 +987,8 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
                     peer.addEventListener(downloadListener, Threading.SAME_THREAD);
                 downloadPeer.setDownloadData(true);
                 downloadPeer.setDownloadParameters(fastCatchupTimeSecs, bloomFilter != null);
+            } else {
+                log.info("No downloadpeer to set");
             }
         } finally {
             lock.unlock();
@@ -1052,11 +1054,13 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
 
             log.info("{}: Peer died", address);
             if (peer == downloadPeer) {
-                log.info("Download peer died. Picking a new one.");
+                log.info("Download peer died. Disabling it...");
                 setDownloadPeer(null);
                 // Pick a new one and possibly tell it to download the chain.
+                log.info("and picking a new one..");
                 final Peer newDownloadPeer = selectDownloadPeer(peers);
                 if (newDownloadPeer != null) {
+                    log.info("found..");
                     setDownloadPeer(newDownloadPeer);
                     if (downloadListener != null) {
                         startBlockChainDownloadFromPeer(newDownloadPeer);
@@ -1079,6 +1083,7 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
         } finally {
             lock.unlock();
         }
+        log.info("Download peer selection done.");
 
         peer.removeEventListener(peerListener);
         for (Wallet wallet : wallets) {
@@ -1095,6 +1100,7 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
             });
             peer.removeEventListener(registration.listener);
         }
+        log.info("handlePeerDeath done.");
     }
 
     private void startBlockChainDownloadFromPeer(Peer peer) {
@@ -1343,8 +1349,10 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
         //  - Chain height is reasonable (majority of nodes)
         //  - High enough protocol version for the features we want (but we'll settle for less)
         //  - Ping time.
-        if (peers.isEmpty())
+        if (peers.isEmpty()) {
+            log.info("No peers tor choose for downloadpeer..");
             return null;
+        }
         // Make sure we don't select a peer that is behind/synchronizing itself.
         int mostCommonChainHeight = getMostCommonChainHeight(peers);
         List<Peer> candidates = new ArrayList<Peer>();

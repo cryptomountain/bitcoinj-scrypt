@@ -83,7 +83,12 @@ public class AuroraCoinParams extends NetworkParameters {
         subsidyDecreaseBlockCount = 840000;
 
         dnsSeeds = new String[] {
-                "auroraexplorer.atorox.net"
+                "auroraexplorer.atorox.net",
+        		"93.158.203.104",
+        		"2.248.159.250",
+        		"69.165.209.14",
+        		"93.31.123.188"
+        		
         };
     }
 
