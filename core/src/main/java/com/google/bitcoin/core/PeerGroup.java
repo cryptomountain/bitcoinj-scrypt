@@ -28,6 +28,7 @@ import com.google.bitcoin.utils.Threading;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.*;
+
 import net.jcip.annotations.GuardedBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -936,7 +937,12 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
                 if (firstRun) {
                     firstRun = false;
                     try {
-                        peer.ping().addListener(this, Threading.SAME_THREAD);
+                    	ListenableFuture<Long> future = peer.ping();
+                    	if (future == null) {
+                            log.warn("pinging, but peer already gone " + peer);
+                            return;
+                        }
+                    	future.addListener(this, Threading.SAME_THREAD);
                     } catch (Exception e) {
                         log.warn("{}: Exception whilst trying to ping peer: {}", peer, e.toString());
                         return;
@@ -953,7 +959,12 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
                         try {
                             if (!peers.contains(peer) || !PeerGroup.this.isRunning())
                                 return;  // Peer was removed/shut down.
-                            peer.ping().addListener(pingRunnable[0], Threading.SAME_THREAD);
+                        	ListenableFuture<Long> future = peer.ping();
+                        	if (future == null) {
+                                log.warn("pinging, but peer already gone " + peer);
+                                return;
+                            }
+                        	future.addListener(pingRunnable[0], Threading.SAME_THREAD);
                         } catch (Exception e) {
                             log.warn("{}: Exception whilst trying to ping peer: {}", peer, e.toString());
                         }

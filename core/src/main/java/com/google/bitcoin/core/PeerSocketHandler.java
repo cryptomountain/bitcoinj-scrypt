@@ -46,6 +46,7 @@ public abstract class PeerSocketHandler extends AbstractTimeoutHandler implement
     protected PeerAddress peerAddress;
     // If we close() before we know our writeTarget, set this to true to call writeTarget.closeConnection() right away.
     private boolean closePending = false;
+    protected boolean closed = false;
     // writeTarget will be thread-safe, and may call into PeerGroup, which calls us, so we should call it unlocked
     @VisibleForTesting MessageWriteTarget writeTarget = null;
 
@@ -95,6 +96,7 @@ public abstract class PeerSocketHandler extends AbstractTimeoutHandler implement
      * Closes the connection to the peer if one exists, or immediately closes the connection as soon as it opens
      */
     public void close() {
+    	closed=true;
         lock.lock();
         try {
             if (writeTarget == null) {

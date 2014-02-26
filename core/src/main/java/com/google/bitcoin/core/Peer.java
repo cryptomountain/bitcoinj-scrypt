@@ -752,6 +752,7 @@ public class Peer extends PeerSocketHandler {
                 log.info("{}: Dep resolution waiting for a pong with nonce {}", this, nonce);
                 ping(nonce).addListener(new Runnable() {
                     public void run() {
+                    	// what if it never comes? should be timeout
                         // The pong came back so clear out any transactions we requested but didn't get.
                         for (GetDataRequest req : getDataFutures) {
                             if (req.nonce == nonce) {
@@ -1310,6 +1311,10 @@ public class Peer extends PeerSocketHandler {
      * @throws ProtocolException if the peer version is too low to support measurable pings.
      */
     public ListenableFuture<Long> ping() throws ProtocolException {
+        if (this.closed) {
+            log.warn("Peer already closed, NOT Sending ping");
+            return null;
+        }
         return ping((long) (Math.random() * Long.MAX_VALUE));
     }
 
