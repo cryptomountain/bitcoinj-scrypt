@@ -1319,6 +1319,7 @@ public class Peer extends PeerSocketHandler {
             throw new ProtocolException("Peer version is too low for measurable pings: " + ver);
         PendingPing pendingPing = new PendingPing(nonce);
         pendingPings.add(pendingPing);
+        log.warn("Sending ping");
         sendMessage(new Ping(pendingPing.nonce));
         return pendingPing.future;
     }

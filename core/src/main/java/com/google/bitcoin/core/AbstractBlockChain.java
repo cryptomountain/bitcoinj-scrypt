@@ -83,7 +83,7 @@ import static com.google.common.base.Preconditions.*;
  * 2016 blocks are examined and a new difficulty target is calculated from them.</p>
  */
 public abstract class AbstractBlockChain {
-    private static final Logger log = LoggerFactory.getLogger(AbstractBlockChain.class);
+    protected static final Logger log = LoggerFactory.getLogger(AbstractBlockChain.class);
     protected final ReentrantLock lock = Threading.lock("blockchain");
 
     /** Keeps a map of block hashes to StoredBlocks. */
@@ -796,7 +796,7 @@ public abstract class AbstractBlockChain {
     /**
      * Throws an exception if the blocks difficulty is not correct.
      */
-    private void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
+    protected void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
         checkState(lock.isHeldByCurrentThread());
         Block prev = storedPrev.getHeader();
         

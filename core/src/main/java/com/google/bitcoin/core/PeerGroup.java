@@ -558,7 +558,9 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
                 nowMillis = Utils.currentTimeMillis();
             }
             if (inactives.size() == 0) {
-                log.debug("Peer discovery didn't provide us any more peers, not trying to build new connection.");
+                log.info("Peer discovery didn't provide us any more peers, not trying to build new connection.");
+                // to not flood peer discovery bashing our head to the wall when we simply don't find more peers
+                Utils.sleep(1000);
                 return;
             }
             addr = inactives.poll();
@@ -567,9 +569,11 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
         }
 
         // Delay if any backoff is required
+        log.info("Soon connecting to:" + addr);
         long retryTime = Math.max(backoffMap.get(addr).getRetryTime(), groupBackoff.getRetryTime());
         if (retryTime > nowMillis) {
             // Sleep until retry time
+            log.info("Waiting retrytime :" + (retryTime - nowMillis));
             Utils.sleep(retryTime - nowMillis);
         }
 
@@ -579,11 +583,15 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
 
     private boolean haveReadyInactivePeer(long nowMillis) {
         // No inactive peers to try?
-        if (inactives.size() == 0)
+        if (inactives.size() == 0) {
+            log.info("No inactive peers.");
             return false;
+        }
         // All peers have not reached backoff retry time?
-        if (backoffMap.get(inactives.peek()).getRetryTime() > nowMillis)
+        if (backoffMap.get(inactives.peek()).getRetryTime() > nowMillis) {
+            log.info("No inactive peers, retrytime gone.");
             return false;
+        }
         return true;
     }
 
