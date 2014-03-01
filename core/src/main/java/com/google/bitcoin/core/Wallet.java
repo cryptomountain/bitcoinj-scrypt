@@ -99,6 +99,8 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
     private static final Logger log = LoggerFactory.getLogger(Wallet.class);
     private static final long serialVersionUID = 2L;
     private static final int MINIMUM_BLOOM_DATA_LENGTH = 8;
+	public static final BigInteger MIN_RELAY_TX_FEE = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE;
+	public static final BigInteger MIN_TX_FEE = MIN_RELAY_TX_FEE;
 
     protected final ReentrantLock lock = Threading.lock("wallet");
 
@@ -1532,7 +1534,9 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
          * (rounded down to the nearest kb) as that is how transactions are sorted when added to a block by miners.</p>
          */
         public BigInteger fee = null;
-
+        public BigInteger dustLimit = null; //BigInteger.valueOf(0);
+        public BigInteger dustPrice = null; //BigInteger.valueOf(100000);
+        
         /**
          * <p>A transaction can have a fee attached, which is defined as the difference between the input values
          * and output values. Any value taken in that is not provided to an output can be claimed by a miner. This
@@ -1553,7 +1557,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
          * If you want to modify the default fee for your entire app without having to change each SendRequest you make,
          * you can do it here. This is primarily useful for unit tests.
          */
-        public static BigInteger DEFAULT_FEE_PER_KB = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE;
+        public static BigInteger DEFAULT_FEE_PER_KB = MIN_TX_FEE;
 
         /**
          * <p>Requires that there be enough fee for a default reference client to at least relay the transaction.
@@ -1916,8 +1920,8 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
         BigInteger fee = baseFee.add(BigInteger.valueOf((size / 1000) + 1).multiply(feePerKb));
         output.setValue(output.getValue().subtract(fee));
         // Check if we need additional fee due to the output's value
-        if (output.getValue().compareTo(Utils.CENT) < 0 && fee.compareTo(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE) < 0)
-            output.setValue(output.getValue().subtract(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.subtract(fee)));
+        if (output.getValue().compareTo(Utils.CENT) < 0 && fee.compareTo(MIN_TX_FEE) < 0)
+            output.setValue(output.getValue().subtract(MIN_TX_FEE.subtract(fee)));
         return output.getMinNonDustValue().compareTo(output.getValue()) <= 0;
     }
 
@@ -3351,11 +3355,24 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 if (lastCalculatedSize > 0) {
                     // If the size is exactly 1000 bytes then we'll over-pay, but this should be rare.
                     fees = fees.add(BigInteger.valueOf((lastCalculatedSize / 1000) + 1).multiply(req.feePerKb));
+                    log.info("Adding feePerKb multiplied by size.");
                 } else {
                     fees = fees.add(req.feePerKb);  // First time around the loop.
+                    log.info("Adding feePerKb once.");
                 }
-                if (needAtLeastReferenceFee && fees.compareTo(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE) < 0)
-                    fees = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE;
+                if ((req.dustPrice != null) && (req.dustLimit != null)) {
+                    log.info("Completing send tx with dustLimit {} and price {} satoshis ",
+                              req.dustLimit, req.dustPrice);
+	                for (TransactionOutput output : req.tx.getOutputs())
+	                    if (output.getValue().compareTo(req.dustLimit) < 0) {
+	                    	fees = fees.add(req.dustPrice);
+	                        log.info("Adding dustPrice for a dust output.");
+	                	}
+            	}
+                // change is also output and it can be dust, add it when we know
+                
+                if (needAtLeastReferenceFee && fees.compareTo(MIN_TX_FEE) < 0)
+                    fees = MIN_TX_FEE;
 
                 valueNeeded = value.add(fees);
                 if (additionalValueForNextCategory != null)
@@ -3385,14 +3402,24 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 if (additionalValueSelected != null)
                     change = change.add(additionalValueSelected);
 
+                // if change is dust, we need to add dustPrice as well
+                /*if ((req.dustPrice != null) && (req.dustLimit != null)) {
+                    if (change.compareTo(req.dustLimit) < 0) {
+                    	fees = fees.add(req.dustPrice);
+                        log.info("Adding dustPrice for a dust change.");
+                	}
+            	}else {
+                    log.info("Free dust!");
+            	}*/
+                
                 // If change is < 0.01 BTC, we will need to have at least minfee to be accepted by the network
                 if (req.ensureMinRequiredFee && !change.equals(BigInteger.ZERO) &&
-                        change.compareTo(Utils.CENT) < 0 && fees.compareTo(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE) < 0) {
+                        change.compareTo(Utils.CENT) < 0 && fees.compareTo(MIN_TX_FEE) < 0) {
                     // This solution may fit into category 2, but it may also be category 3, we'll check that later
                     eitherCategory2Or3 = true;
                     additionalValueForNextCategory = Utils.CENT;
                     // If the change is smaller than the fee we want to add, this will be negative
-                    change = change.subtract(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.subtract(fees));
+                    change = change.subtract(MIN_TX_FEE.subtract(fees));
                 }
 
                 int size = 0;
@@ -3409,7 +3436,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                     if (req.ensureMinRequiredFee && Transaction.MIN_NONDUST_OUTPUT.compareTo(change) >= 0) {
                         // This solution definitely fits in category 3
                         isCategory3 = true;
-                        additionalValueForNextCategory = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.add(
+                        additionalValueForNextCategory = MIN_TX_FEE.add(
                                                          Transaction.MIN_NONDUST_OUTPUT.add(BigInteger.ONE));
                     } else {
                         size += changeOutput.bitcoinSerialize().length + VarInt.sizeOf(req.tx.getOutputs().size()) - VarInt.sizeOf(req.tx.getOutputs().size() - 1);
@@ -3421,7 +3448,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                     if (eitherCategory2Or3) {
                         // This solution definitely fits in category 3 (we threw away change because it was smaller than MIN_TX_FEE)
                         isCategory3 = true;
-                        additionalValueForNextCategory = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE.add(BigInteger.ONE);
+                        additionalValueForNextCategory = MIN_TX_FEE.add(BigInteger.ONE);
                     }
                 }
 
@@ -3682,7 +3709,7 @@ public class Wallet implements Serializable, BlockChainListener, PeerFilterProvi
                 rekeyTx.addInput(output);
             }
             rekeyTx.addOutput(toMove.valueGathered, safeKey);
-            if (!adjustOutputDownwardsForFee(rekeyTx, toMove, BigInteger.ZERO, Transaction.REFERENCE_DEFAULT_MIN_TX_FEE)) {
+            if (!adjustOutputDownwardsForFee(rekeyTx, toMove, BigInteger.ZERO, MIN_TX_FEE)) {
                 log.error("Failed to adjust rekey tx for fees.");
                 return null;
             }

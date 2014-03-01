@@ -31,7 +31,7 @@ import static com.google.common.base.Preconditions.checkState;
  * and on the wire, are derived from this class.</p>
  */
 public abstract class Message implements Serializable {
-    private static final Logger log = LoggerFactory.getLogger(Message.class);
+    protected static final Logger log = LoggerFactory.getLogger(Message.class);
     private static final long serialVersionUID = -3561053461717079135L;
 
     public static final int MAX_SIZE = 0x02000000;

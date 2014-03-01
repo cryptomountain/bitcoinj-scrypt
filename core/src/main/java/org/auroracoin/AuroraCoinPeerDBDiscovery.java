@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A version of PeerDBDiscovery that only returns nodes which support Bloom filters according to Litecoin's BLOOM bit
+ * nite69: bloom filer removed for auroracoin
  */
 public class AuroraCoinPeerDBDiscovery extends PeerDBDiscovery {
     // Ugly hack to only let the PeerDB know about peers with NODE_BLOOM (1<<1)
@@ -46,7 +47,7 @@ public class AuroraCoinPeerDBDiscovery extends PeerDBDiscovery {
             if (m instanceof AddressMessage) {
                 AddressMessage newMessage = new AddressMessage(params);
                 for (PeerAddress addr : ((AddressMessage) m).getAddresses())
-                    if (addr.getServices().and(BigInteger.valueOf(1 << 1)).equals(BigInteger.valueOf(1 << 1)))
+                    //if (addr.getServices().and(BigInteger.valueOf(1 << 1)).equals(BigInteger.valueOf(1 << 1)))
                         newMessage.addAddress(addr);
                 return newMessage;
             }

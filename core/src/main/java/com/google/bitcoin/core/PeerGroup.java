@@ -599,12 +599,14 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
     @Override
     protected void startUp() throws Exception {
         // This is run in a background thread by the Service implementation.
+        log.info("Creating pingtimer.");
         vPingTimer = new Timer("Peer pinging thread", true);
         channels.startAndWait();
     }
 
     @Override
     protected void shutDown() throws Exception {
+        log.info("Cancelling pingtimer.");
         // This is run on a separate thread by the Service implementation.
         vPingTimer.cancel();
         // Blocking close of all sockets.

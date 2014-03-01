@@ -132,6 +132,7 @@ public class AddressMessage extends Message {
         unCache();
         maybeParse();
         address.setParent(this);
+        log.info("Adding peer to database "+address);
         addresses.add(address);
         if (length == UNKNOWN_LENGTH)
             getMessageSize();

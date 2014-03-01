@@ -9,6 +9,9 @@ import java.math.BigInteger;
  * An extension of BitcoinJ's wallet to use Litecoin's fee structure by default
  */
 public class AuroraCoinWallet extends Wallet {
+	public static final BigInteger MIN_RELAY_TX_FEE = BigInteger.valueOf(100000);
+	public static final BigInteger MIN_TX_FEE = MIN_RELAY_TX_FEE;
+	
     public AuroraCoinWallet(NetworkParameters params) {
         super(params);
     }
@@ -34,12 +37,19 @@ public class AuroraCoinWallet extends Wallet {
 
     // Override Send stuff to set the right fee params
     private void setRequestFeeForOutputs(SendRequest req) {
-        req.ensureMinRequiredFee = false;
+    	BigInteger baseFee = MIN_RELAY_TX_FEE; 
+        req.ensureMinRequiredFee = true;
         req.fee = BigInteger.ZERO;
-        req.feePerKb = Utils.CENT.divide(BigInteger.TEN);
+        req.feePerKb = baseFee;
+        /* Dust spam prevention - but this does not count the change, which can also be dust!
+         * Have to do it on the main Wallet
         for (TransactionOutput output : req.tx.getOutputs())
             if (output.getValue().compareTo(Utils.CENT.divide(BigInteger.TEN)) < 0)
-                req.fee = req.fee.add(Utils.CENT.divide(BigInteger.TEN));
+                req.fee = req.fee.add(baseFee);
+        */
+        req.dustLimit = Utils.CENT;
+        req.dustPrice = baseFee;
+        
     }
 
     public Transaction createSend(Address address, BigInteger nanocoins) throws InsufficientMoneyException {
