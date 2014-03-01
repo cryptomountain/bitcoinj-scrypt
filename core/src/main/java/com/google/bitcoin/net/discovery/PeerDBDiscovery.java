@@ -60,7 +60,7 @@ import static com.google.common.base.Preconditions.checkState;
  * </ul></p>
  */
 public class PeerDBDiscovery implements PeerDiscovery {
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(PeerDBDiscovery.class);
+    protected static final org.slf4j.Logger log = LoggerFactory.getLogger(PeerDBDiscovery.class);
 
     // Threading notes:
     //  * In general all calls will come in on the USER_THREAD so we're probably OK to just ignore threading, but we

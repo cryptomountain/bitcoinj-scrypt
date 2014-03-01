@@ -848,34 +848,6 @@ public abstract class AbstractBlockChain {
         int timespan = (int) (prev.getTimeSeconds() - blockIntervalAgo.getTimeSeconds());
         final int targetTimespan = params.getTargetTimespan();
         BigInteger newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
-        if (AuroraCoinParams.ID_AURORACOIN.equals(params.getId())) {
-        	// Auroracoin block difficulty
-        	if ((storedPrev.getHeight()+1) < 135)
-        		newDifficulty = params.getProofOfWorkLimit();
-        	else if ((storedPrev.getHeight()+1) == 121)
-        		newDifficulty = params.genesisBlock.getDifficultyTargetAsInteger();
-        	else {
-	        	
-	        	int nActualTimespan = timespan;
-	        	log.info(" nActualTimespan = " + nActualTimespan + " before bounds\n");        
-	
-		            int nActualTimespanMax = ((targetTimespan*75)/50);
-		            int nActualTimespanMin = ((targetTimespan*50)/75);
-		           
-		       if (nActualTimespan < nActualTimespanMin)
-		           nActualTimespan = nActualTimespanMin;
-		       if (nActualTimespan > nActualTimespanMax)
-		           nActualTimespan = nActualTimespanMax;
-		       
-		       log.info("Old diff target: " + newDifficulty.toString(16));
-		       newDifficulty = newDifficulty.multiply(BigInteger.valueOf(nActualTimespan));
-		       log.info("Times " + nActualTimespan);
-		        log.info("    is  " + newDifficulty.toString(16));
-		       newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
-	           log.info("Div by " + targetTimespan);
-		        log.info("    is  " + newDifficulty.toString(16));
-        	}
-        } else {
             // Limit the adjustment step.
 	        if (timespan < targetTimespan / 4)
 	            timespan = targetTimespan / 4;
@@ -889,8 +861,8 @@ public abstract class AbstractBlockChain {
 	        newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
 	        log.info("Div by " + targetTimespan);
 	        log.info("    is  " + newDifficulty.toString(16));
-        }
-        if (newDifficulty.compareTo(params.getProofOfWorkLimit()) > 0) {
+
+	    if (newDifficulty.compareTo(params.getProofOfWorkLimit()) > 0) {
             log.info("Difficulty hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
             newDifficulty = params.getProofOfWorkLimit();
             log.info("Setting to: {}", newDifficulty.toString(16));

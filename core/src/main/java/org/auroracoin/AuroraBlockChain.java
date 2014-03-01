@@ -75,6 +75,11 @@ public class AuroraBlockChain extends BlockChain {
     @Override
     protected void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
         checkState(lock.isHeldByCurrentThread());
+    	if ((storedPrev.getHeight()+1) > 5400) {
+    		checkGravityWell();
+    		return;
+        }
+    	
         Block prev = storedPrev.getHeader();
         
         // Is this supposed to be a difficulty transition point?
@@ -125,63 +130,42 @@ public class AuroraBlockChain extends BlockChain {
         int timespan = (int) (prev.getTimeSeconds() - blockIntervalAgo.getTimeSeconds());
         final int targetTimespan = params.getTargetTimespan();
         BigInteger newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
-        //if (AuroraCoinParams.ID_AURORACOIN.equals(params.getId())) 
-        {
-        	// Auroracoin block difficulty
-        	if ((storedPrev.getHeight()+1) < 135)
-        		newDifficulty = params.getProofOfWorkLimit();
-        	else if ((storedPrev.getHeight()+1) <= 5400)
-            //if (pindexLast->nHeight+1 > 5400)
-        	{
-	        	
-	        	int nActualTimespan = timespan;
-	        	log.info(" nActualTimespan = " + nActualTimespan + " before bounds\n");        
-	
-		            int nActualTimespanMax = ((targetTimespan*75)/50);
-		            int nActualTimespanMin = ((targetTimespan*50)/75);
-		           
-		       if (nActualTimespan < nActualTimespanMin)
-		           nActualTimespan = nActualTimespanMin;
-		       if (nActualTimespan > nActualTimespanMax)
-		           nActualTimespan = nActualTimespanMax;
-		       
-		       log.info("Old diff target: " + newDifficulty.toString(16));
-		       newDifficulty = newDifficulty.multiply(BigInteger.valueOf(nActualTimespan));
-		       log.info("Times " + nActualTimespan);
-		        log.info("    is  " + newDifficulty.toString(16));
-		       newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
-	           log.info("Div by " + targetTimespan);
-		        log.info("    is  " + newDifficulty.toString(16));
-        	} else 
-        		newDifficulty = checkGravityWell();
-        	//{
-        	//	static const int64	BlocksTargetSpacing			= 5 * 60; // 5 minutes 
-        	//	unsigned int		TimeDaySeconds				= 60 * 60 * 24;
-        	//	int64				PastSecondsMin				= TimeDaySeconds * 0.5;
-        	//	int64				PastSecondsMax				= TimeDaySeconds * 14;
-        	//	uint64				PastBlocksMin				= PastSecondsMin / BlocksTargetSpacing;
-        	//	uint64				PastBlocksMax				= PastSecondsMax / BlocksTargetSpacing;	
-        	//	
-        	//	return GravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
-        	//}
+    	if ((storedPrev.getHeight()+1) < 135)
+    		newDifficulty = params.getProofOfWorkLimit();
+    	else 
+        //if (pindexLast->nHeight+1 > 5400)
+    	{
         	
-        } 
-        //else 
-        //{
-            // Limit the adjustment step.
-	    //    if (timespan < targetTimespan / 4)
-	    //        timespan = targetTimespan / 4;
-	    //    if (timespan > targetTimespan * 4)
-	    //        timespan = targetTimespan * 4;
-	
-	   //     log.info("Old diff target: " + newDifficulty.toString(16));
-	    //    newDifficulty = newDifficulty.multiply(BigInteger.valueOf(timespan));
-	    //    log.info("Times " + timespan);
-	    //    log.info("    is  " + newDifficulty.toString(16));
-	    //    newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
-	    //    log.info("Div by " + targetTimespan);
-	    //    log.info("    is  " + newDifficulty.toString(16));
-        //}
+        	int nActualTimespan = timespan;
+        	log.info(" nActualTimespan = " + nActualTimespan + " before bounds\n");        
+
+	            int nActualTimespanMax = ((targetTimespan*75)/50);
+	            int nActualTimespanMin = ((targetTimespan*50)/75);
+	           
+	       if (nActualTimespan < nActualTimespanMin)
+	           nActualTimespan = nActualTimespanMin;
+	       if (nActualTimespan > nActualTimespanMax)
+	           nActualTimespan = nActualTimespanMax;
+	       
+	       log.info("Old diff target: " + newDifficulty.toString(16));
+	       newDifficulty = newDifficulty.multiply(BigInteger.valueOf(nActualTimespan));
+	       log.info("Times " + nActualTimespan);
+	        log.info("    is  " + newDifficulty.toString(16));
+	       newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
+           log.info("Div by " + targetTimespan);
+	        log.info("    is  " + newDifficulty.toString(16));
+    	} 
+    	//{
+    	//	static const int64	BlocksTargetSpacing			= 5 * 60; // 5 minutes 
+    	//	unsigned int		TimeDaySeconds				= 60 * 60 * 24;
+    	//	int64				PastSecondsMin				= TimeDaySeconds * 0.5;
+    	//	int64				PastSecondsMax				= TimeDaySeconds * 14;
+    	//	uint64				PastBlocksMin				= PastSecondsMin / BlocksTargetSpacing;
+    	//	uint64				PastBlocksMax				= PastSecondsMax / BlocksTargetSpacing;	
+    	//	
+    	//	return GravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
+    	//}
+        	
         if (newDifficulty.compareTo(params.getProofOfWorkLimit()) > 0) {
             log.info("Difficulty hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
             newDifficulty = params.getProofOfWorkLimit();

@@ -44,11 +44,14 @@ public class AuroraCoinPeerDBDiscovery extends PeerDBDiscovery {
         }
         @Override
         public Message onPreMessageReceived(Peer p, Message m) {
+    		log.info("PreMessageReceived "+p );
             if (m instanceof AddressMessage) {
                 AddressMessage newMessage = new AddressMessage(params);
-                for (PeerAddress addr : ((AddressMessage) m).getAddresses())
+                for (PeerAddress addr : ((AddressMessage) m).getAddresses()) {
                     //if (addr.getServices().and(BigInteger.valueOf(1 << 1)).equals(BigInteger.valueOf(1 << 1)))
-                        newMessage.addAddress(addr);
+            		log.info("newMessage "+addr );
+                    newMessage.addAddress(addr);
+                }
                 return newMessage;
             }
             return m;
@@ -57,6 +60,7 @@ public class AuroraCoinPeerDBDiscovery extends PeerDBDiscovery {
         public void onPeerConnected(Peer p, int peerCount) {
             //if ((p.getPeerVersionMessage().localServices & (1<<1)) == (1<<1) &&
             //        p.getPeerVersionMessage().clientVersion >= 70002)
+    		log.info("PeerDBConnected: "+p );
                 parent.onPeerConnected(p, peerCount);
             //else
             //    p.close();
@@ -64,7 +68,7 @@ public class AuroraCoinPeerDBDiscovery extends PeerDBDiscovery {
 
         @Override
         public void onPeerDisconnected(Peer p, int peerCount) {
-            if (p.getPeerVersionMessage() != null && (p.getPeerVersionMessage().localServices & (1<<1)) == (1<<1))
+            //if (p.getPeerVersionMessage() != null && (p.getPeerVersionMessage().localServices & (1<<1)) == (1<<1))
                 parent.onPeerDisconnected(p, peerCount);
         }
     }
@@ -85,6 +89,7 @@ public class AuroraCoinPeerDBDiscovery extends PeerDBDiscovery {
 
     public AuroraCoinPeerDBDiscovery(NetworkParameters params, File db, PeerGroup group) {
         super(params, db, new PeerGroupWrapper(params, group));
+		log.info("AuroraCoinPeerDBDiscovery" );
     }
 }
 

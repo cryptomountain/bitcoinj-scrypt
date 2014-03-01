@@ -45,7 +45,7 @@ public class AuroraCoinParams extends NetworkParameters {
         dumpedPrivateKeyHeader = 128 + addressHeader;
 
         targetTimespan = (int)(8 * 10 * 60);
-	int targetSpacing = (int)(10 * 60);
+        int targetSpacing = (int)(10 * 60);
         interval = targetTimespan/targetSpacing;
 
         genesisBlock.setDifficultyTarget(0x1e0fffffL);

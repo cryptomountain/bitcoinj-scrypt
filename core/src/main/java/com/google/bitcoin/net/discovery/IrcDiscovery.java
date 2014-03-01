@@ -70,9 +70,11 @@ public class IrcDiscovery implements PeerDiscovery {
     }
 
     protected void onIRCSend(String message) {
+        log.info("IRC Send: "+message);
     }
 
     protected void onIRCReceive(String message) {
+        log.info("IRC Receive: "+message);
     }
 
     public void shutdown() {
@@ -104,7 +106,7 @@ public class IrcDiscovery implements PeerDiscovery {
                 connection.setSoTimeout(timeoutMsec);
                 try {
                     InetAddress ip = ips[ipCursor];
-                    log.info("Connecting to IRC with " + ip);
+                    log.info("Connecting to IRC with " + ip + ":" + port);
                     connection.connect(new InetSocketAddress(ip, port), timeoutMsec);
                 } catch (SocketTimeoutException e) {
                     connection = null;
@@ -116,6 +118,7 @@ public class IrcDiscovery implements PeerDiscovery {
                     throw new PeerDiscoveryException("Could not connect to " + server);
                 }
             } while (connection == null);
+            log.info("Connected to IRC");
 
             writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
             reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
@@ -232,6 +235,7 @@ public class IrcDiscovery implements PeerDiscovery {
             }
 
             InetSocketAddress address = new InetSocketAddress(ip, port);
+            log.warn("IRC found address: " + ip+":"+port);
             addresses.add(address);
         }
 
