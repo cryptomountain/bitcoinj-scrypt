@@ -70,11 +70,11 @@ public class IrcDiscovery implements PeerDiscovery {
     }
 
     protected void onIRCSend(String message) {
-        log.info("IRC Send: "+message);
+        //log.info("IRC Send: "+message);
     }
 
     protected void onIRCReceive(String message) {
-        log.info("IRC Receive: "+message);
+        //log.info("IRC Receive: "+message);
     }
 
     public void shutdown() {
@@ -235,7 +235,7 @@ public class IrcDiscovery implements PeerDiscovery {
             }
 
             InetSocketAddress address = new InetSocketAddress(ip, port);
-            log.warn("IRC found address: " + ip+":"+port);
+            //log.warn("IRC found address: " + ip+":"+port);
             addresses.add(address);
         }
 

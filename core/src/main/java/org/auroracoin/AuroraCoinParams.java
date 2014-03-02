@@ -33,7 +33,27 @@ import static com.google.common.base.Preconditions.checkState;
  * and testing of applications and new Bitcoin versions.
  */
 public class AuroraCoinParams extends NetworkParameters {
-    public static final String ID_AURORACOIN = "org.auroracoin.production";
+	private static final long serialVersionUID = 2996552283757721901L;
+	public static final String ID_AURORACOIN = "org.auroracoin.production";
+    protected static final int targetKGWTimespan = (int)(5 * 60);
+    private static final int	timeDaySeconds = 60 * 60 * 24;
+	private static final long PastSecondsMin	= timeDaySeconds / 2; //* 0.5;
+	private static final long PastSecondsMax	= timeDaySeconds * 14;
+	private static final long PastBlocksMin	= PastSecondsMin / targetKGWTimespan;
+	private static final long PastBlocksMax	= PastSecondsMax / targetKGWTimespan;	
+
+    private KGWParams kgwParams= new KGWParams(targetKGWTimespan, PastBlocksMin, PastBlocksMax);
+    
+    @Override
+    public KGWParams getKgwParams() {
+		return kgwParams;
+	}
+
+	public int getTargetTimespan(int blockHeight) {
+    	if (blockHeight < 5401) return this.getTargetTimespan();
+    	return targetKGWTimespan;
+    }
+
     public AuroraCoinParams() {
         super();
         id = ID_AURORACOIN;

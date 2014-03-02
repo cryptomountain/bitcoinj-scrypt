@@ -20,6 +20,7 @@ import com.google.bitcoin.params.*;
 import com.google.bitcoin.script.Script;
 import com.google.bitcoin.script.ScriptOpCodes;
 import com.google.common.base.Objects;
+
 import org.spongycastle.util.encoders.Hex;
 
 import javax.annotation.Nullable;
@@ -55,6 +56,22 @@ public abstract class NetworkParameters implements Serializable {
             return;
         paramSet.add(params);
     }
+    
+    public class KGWParams {
+    	public final int blocksTargetSpacing;
+    	public final long pastBlocksMin;
+    	public final long pastBlocksMax;
+    	public KGWParams(final int blocksTargetSpacing, final long pastBlocksMin, final long pastBlocksMax) {
+    		this.blocksTargetSpacing = blocksTargetSpacing;
+    		this.pastBlocksMin = pastBlocksMin;
+    		this.pastBlocksMax = pastBlocksMax;
+    	}
+    }
+        
+    public KGWParams getKgwParams() {
+		return null;
+	}
+
 
     protected Block genesisBlock;
     protected BigInteger proofOfWorkLimit;
