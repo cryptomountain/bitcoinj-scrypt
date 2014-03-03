@@ -92,6 +92,7 @@ public class IrcDiscovery implements PeerDiscovery {
      * for the given server, so a timeout value of 1 second may result in 5 seconds delay if 5 servers are advertised.
      */
     public InetSocketAddress[] getPeers(long timeoutValue, TimeUnit timeoutUnit) throws PeerDiscoveryException {
+        log.info("IrcDiscovery, getpeers ");
         ArrayList<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>();
         connection = null;
         BufferedReader reader = null;
@@ -186,6 +187,7 @@ public class IrcDiscovery implements PeerDiscovery {
                 log.warn("Exception whilst closing IRC discovery: " + e.toString());
             }
         }
+        log.info("IrcDiscovery, getpeers found " + addresses.size());
         return addresses.toArray(new InetSocketAddress[]{});
     }
 

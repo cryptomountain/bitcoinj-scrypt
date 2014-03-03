@@ -279,6 +279,7 @@ public class PeerDBDiscovery implements PeerDiscovery {
 
     @Override
     public synchronized InetSocketAddress[] getPeers(long timeoutValue, TimeUnit timeoutUnit) throws PeerDiscoveryException {
+        log.info("DBDiscovery, getPeers");
         int addressesToReturn = Math.min(ADDRESSES_RETURNED, addressToSetMap.size()/MAX_ADDRESSES_FACTOR);
         InetSocketAddress[] addresses = new InetSocketAddress[addressesToReturn];
         //TODO: There is a better way to get a random set here
@@ -294,6 +295,7 @@ public class PeerDBDiscovery implements PeerDiscovery {
             if (iterator.hasNext())
                 addresses[i] = peer.address.toSocketAddress();
         }
+        log.info("DBDiscovery, getpeers found " + addresses.length);
         return addresses;
     }
 

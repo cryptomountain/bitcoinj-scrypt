@@ -64,6 +64,7 @@ public class DnsDiscovery implements PeerDiscovery {
     }
 
     public InetSocketAddress[] getPeers(long timeoutValue, TimeUnit timeoutUnit) throws PeerDiscoveryException {
+        log.info("DnsDiscovery, getpeers");
         if (hostNames == null)
             throw new PeerDiscoveryException("Unable to find any peers via DNS");
 
@@ -100,6 +101,7 @@ public class DnsDiscovery implements PeerDiscovery {
             if (addrs.size() == 0)
                 throw new PeerDiscoveryException("Unable to find any peers via DNS");
             Collections.shuffle(addrs);
+            log.info("DnsDiscovery, getpeers found " + addrs.size());
             threadPool.shutdownNow();
             return addrs.toArray(new InetSocketAddress[addrs.size()]);
         } catch (InterruptedException e) {
