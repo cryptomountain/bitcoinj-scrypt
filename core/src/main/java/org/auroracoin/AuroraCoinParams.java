@@ -103,8 +103,13 @@ public class AuroraCoinParams extends NetworkParameters {
         subsidyDecreaseBlockCount = 840000;
 
         dnsSeeds = new String[] {
-                "dnsseed.aurora.so"
-        		
+                //"dnsseed.aurora.so",
+        		"93.158.203.104",
+        		"2.248.159.250",
+        		"93.31.123.188",
+        		"85.25.194.238",
+        		"82.128.238.235",
+        		"5.9.157.150"    		
         };
     }
 
