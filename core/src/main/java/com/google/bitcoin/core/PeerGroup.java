@@ -561,14 +561,16 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
             if (inactives.size() == 0) {
                 log.info("Peer discovery didn't provide us any more peers, not trying to build new connection.");
                 // to not flood peer discovery bashing our head to the wall when we simply don't find more peers
-                Utils.sleep(1000);
-                return;
-            }
-            addr = inactives.poll();
+                addr = null; //Utils.sleep(1000);
+            } else addr = inactives.poll();
         } finally {
             lock.unlock();
         }
-
+        if (addr==null) {
+        	Utils.sleep(1000);
+            return;
+        }
+        	
         // Delay if any backoff is required
         log.info("Soon connecting to:" + addr);
         long retryTime = Math.max(backoffMap.get(addr).getRetryTime(), groupBackoff.getRetryTime());
