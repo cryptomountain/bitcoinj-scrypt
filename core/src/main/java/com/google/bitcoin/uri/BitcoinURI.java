@@ -87,6 +87,7 @@ public class BitcoinURI {
     public static final String FIELD_LABEL = "label";
     public static final String FIELD_AMOUNT = "amount";
     public static final String FIELD_ADDRESS = "address";
+    public static final String FIELD_URL = "httpaddress";
 
     public static final String BITCOIN_SCHEME = "bitcoin:";
     private static final String ENCODED_SPACE_CHARACTER = "%20";
@@ -138,9 +139,20 @@ public class BitcoinURI {
         // For instance with : bitcoin:129mVqKUmJ9uwPxKJBnNdABbuaaNfho4Ha?amount=0.06&label=Tom%20%26%20Jerry
         // the & (%26) in Tom and Jerry gets interpreted as a separator and the label then gets parsed
         // as 'Tom ' instead of 'Tom & Jerry')
+        // How to do it if we need to *send* our address to a site for *receiveing* bitcoins from that site?
+        // Suggestion:
+        // bitcoin:http(s)://btcexchange.example/giveaddr.php?sid=1234567890
+        // Wallet would make a http get :
+        // http(s)://btcexchange.example/giveaddr.php?sid=1234567890&addr=129mVqKUmJ9uwPxKJBnNdABbuaaNfho4Ha
+        //
         String schemeRequired = params == null ? BITCOIN_SCHEME : params.getURIScheme();
         String schemeSpecificPart;
-        if (input.startsWith(schemeRequired + "//")) {
+        if (input.startsWith(schemeRequired + "http")) {
+        	int startpoint = schemeRequired.length();
+        	String httpAddress = input.substring(startpoint);
+        	putWithValidation(FIELD_URL,httpAddress);
+        	return;
+        } else if (input.startsWith(schemeRequired + "//")) {
             schemeSpecificPart = input.substring((schemeRequired + "//").length());
         } else if (input.startsWith(schemeRequired)) {
             schemeSpecificPart = input.substring(schemeRequired.length());
@@ -242,6 +254,10 @@ public class BitcoinURI {
         }
     }
 
+    public String getHttpAddress() {
+    	return (String) parameterMap.get(FIELD_URL);
+    }
+    
     /**
      * @return The Bitcoin Address from the URI
      */
