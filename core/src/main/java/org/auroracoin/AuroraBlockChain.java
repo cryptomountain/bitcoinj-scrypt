@@ -167,6 +167,13 @@ public class AuroraBlockChain extends BlockChain {
     	//	
     	//	return GravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
     	//}
+
+	int accuracyBytes = (int) (nextBlock.getDifficultyTarget() >>> 24) - 3;
+    	
+	// The calculated difficulty is to a higher precision than received, so reduce here.
+	BigInteger mask = BigInteger.valueOf(0xFFFFFFL).shiftLeft(accuracyBytes * 8);
+	newDifficulty = newDifficulty.and(mask);
+
         	
         if (newDifficulty.compareTo(params.getProofOfWorkLimit()) > 0) {
             log.info("Difficulty hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
@@ -175,12 +182,6 @@ public class AuroraBlockChain extends BlockChain {
         } else {
             //log.info("Difficulty did not hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
         }
-
-        int accuracyBytes = (int) (nextBlock.getDifficultyTarget() >>> 24) - 3;
-    	
-        // The calculated difficulty is to a higher precision than received, so reduce here.
-        BigInteger mask = BigInteger.valueOf(0xFFFFFFL).shiftLeft(accuracyBytes * 8);
-        newDifficulty = newDifficulty.and(mask);
 
         BigInteger receivedDifficulty = nextBlock.getDifficultyTargetAsInteger();
         if (newDifficulty.compareTo(receivedDifficulty) != 0)
@@ -215,9 +216,9 @@ public class AuroraBlockChain extends BlockChain {
     		if (i == 1)	{ PastDifficultyAverage = Utils.decodeCompactBits(b.getDifficultyTarget()); }
     		else { 
     			PastDifficultyAverage = Utils.decodeCompactBits(b.getDifficultyTarget());
-    			PastDifficultyAverage.subtract(PastDifficultyAveragePrev);
-    			PastDifficultyAverage.divide(BigInteger.valueOf(i)); 
-    			PastDifficultyAverage.add(PastDifficultyAveragePrev); 
+    			PastDifficultyAverage = PastDifficultyAverage.subtract(PastDifficultyAveragePrev);
+    			PastDifficultyAverage = PastDifficultyAverage.divide(BigInteger.valueOf(i)); 
+    			PastDifficultyAverage = PastDifficultyAverage.add(PastDifficultyAveragePrev); 
     		}
     		PastDifficultyAveragePrev = PastDifficultyAverage;
     		
@@ -241,10 +242,19 @@ public class AuroraBlockChain extends BlockChain {
     		if (blockReading == null) { /*assert(BlockReading);*/ break; }
        	}
     	BigInteger bnNew = PastDifficultyAverage;
+	log.info("Average   : " + bnNew.toString(16));
     	if ((PastRateActualSeconds != 0) && (PastRateTargetSeconds != 0)) {
-    		bnNew.multiply(BigInteger.valueOf(PastRateActualSeconds));
-    		bnNew.divide(BigInteger.valueOf(PastRateTargetSeconds));
+    		bnNew = bnNew.multiply(BigInteger.valueOf(PastRateActualSeconds));
+		log.info("Multiplied: " + bnNew.toString(16));
+    		bnNew = bnNew.divide(BigInteger.valueOf(PastRateTargetSeconds));
+		log.info("Divided   : " + bnNew.toString(16));
     	}
+	log.info("Difficulty Retarget - Gravity Well");
+	log.info("PastRateAdjustmentRatio = "+PastRateAdjustmentRatio);
+	log.info("PastRateAdjustmentRatio = "+PastRateActualSeconds + "/"+PastRateTargetSeconds);
+	log.info("Before: " + storedPrev.getHeader().getDifficultyTargetAsInteger().toString(16));
+	log.info("After: " + bnNew.toString(16));
+
     	/*
     	if (bnNew > bnProofOfWorkLimit) { bnNew = bnProofOfWorkLimit; }
     	
