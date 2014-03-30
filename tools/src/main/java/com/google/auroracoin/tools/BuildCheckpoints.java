@@ -47,7 +47,7 @@ public class BuildCheckpoints {
             @Override
             public void notifyNewBestBlock(StoredBlock block) throws VerificationException {
                 int height = block.getHeight();
-                if (height % params.getInterval() == 0 && block.getHeader().getTimeSeconds() <= oneMonthAgo) {
+                if (height % params.getCheckpointInterval() == 0 && block.getHeader().getTimeSeconds() <= oneMonthAgo) {
                     System.out.println(String.format("Checkpointing block %s at height %d",
                             block.getHeader().getHash(), block.getHeight()));
                     checkpoints.put(height, block);
@@ -90,8 +90,8 @@ public class BuildCheckpoints {
         checkState(manager.numCheckpoints() == checkpoints.size());
         StoredBlock test = manager.getCheckpointBefore(1396108041);  // block 5800 @ 1396108040
         System.out.println("test getHeight == " + test.getHeight());
-        checkState(test.getHeight() == 5096);
         System.out.println("test gethash == " + test.getHeader().getHashAsString());
-        checkState(test.getHeader().getHashAsString().equals("6d2f3dd9a0a0d9cbaa49fca215b9ea44c1c96824f46bc2b21bfc7e7afcbec572"));
+        checkState(test.getHeight() == 5040);
+        checkState(test.getHeader().getHashAsString().equals("e4294b9055af6c53a2cd818c8ef3a8cdc971751780c298a5e20a547285c964d9"));
     }
 }

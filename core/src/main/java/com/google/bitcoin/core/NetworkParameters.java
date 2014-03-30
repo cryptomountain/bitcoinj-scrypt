@@ -57,8 +57,12 @@ public abstract class NetworkParameters implements Serializable {
         paramSet.add(params);
     }
     
-    public class KGWParams {
-    	public final int blocksTargetSpacing;
+    public class KGWParams implements Serializable {
+    	/**
+		 * 
+		 */
+		private static final long serialVersionUID = -8754421308936614219L;
+		public final int blocksTargetSpacing;
     	public final long pastBlocksMin;
     	public final long pastBlocksMax;
     	public KGWParams(final int blocksTargetSpacing, final long pastBlocksMin, final long pastBlocksMax) {
@@ -331,6 +335,11 @@ public abstract class NetworkParameters implements Serializable {
 
     /** How many blocks pass between difficulty adjustment periods. Bitcoin standardises this to be 2015. */
     public int getInterval() {
+        return interval;
+    }
+
+    /** How many blocks pass between difficulty adjustment periods. Bitcoin standardises this to be 2015. */
+    public int getCheckpointInterval() {
         return interval;
     }
 

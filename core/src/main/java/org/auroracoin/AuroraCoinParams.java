@@ -151,6 +151,12 @@ public class AuroraCoinParams extends NetworkParameters {
 
     static {
         NetworkParameters.registerParams(get());
-        NetworkParameters.PROTOCOL_VERSION = 1000000;
+        NetworkParameters.PROTOCOL_VERSION = 1020000;
+    }
+
+    @Override
+    public int getCheckpointInterval()
+    {
+	return 1008; // 1 week
     }
 }
