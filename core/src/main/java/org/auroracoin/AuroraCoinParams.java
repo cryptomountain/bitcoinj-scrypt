@@ -109,7 +109,8 @@ public class AuroraCoinParams extends NetworkParameters {
         		"93.31.123.188",
         		"85.25.194.238",
         		"82.128.238.235",
-        		"5.9.157.150"    		
+        		"5.9.157.150",
+			"95.85.31.58"    		
         };
     }
 

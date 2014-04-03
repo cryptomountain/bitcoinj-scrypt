@@ -132,7 +132,7 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
         }
     };
 
-    private int minBroadcastConnections = 0;
+    private int minBroadcastConnections = 2;
     private AbstractWalletEventListener walletEventListener = new AbstractWalletEventListener() {
         private void onChanged() {
             recalculateFastCatchupAndFilter(false);
