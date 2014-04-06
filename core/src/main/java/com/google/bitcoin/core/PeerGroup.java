@@ -790,6 +790,7 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
     @Nullable
     protected Peer connectTo(PeerAddress address, boolean incrementMaxConnections) {
         VersionMessage ver = getVersionMessage().duplicate();
+        ver.setTheirAddr(address.getAddr(), address.getPort());
         ver.bestHeight = chain == null ? 0 : chain.getBestChainHeight();
         ver.time = Utils.now().getTime() / 1000;
 

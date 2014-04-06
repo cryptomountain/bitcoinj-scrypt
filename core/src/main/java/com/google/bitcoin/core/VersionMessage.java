@@ -119,6 +119,10 @@ public class VersionMessage extends Message {
             length += 8;
         length += VarInt.sizeOf(subVer.length()) + subVer.length();
     }
+    
+    public void setTheirAddr(InetAddress addr, int port) {
+    	myAddr = new PeerAddress(addr, port, 0); // THey are switched!!!
+    }
 
     @Override
     protected void parseLite() throws ProtocolException {
