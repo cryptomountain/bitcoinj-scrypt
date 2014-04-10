@@ -674,13 +674,18 @@ public class Peer extends PeerSocketHandler {
         // the case of transactions with tons of inputs.
         Set<Transaction> dependencies = new CopyOnWriteArraySet<Transaction>();
         Set<Sha256Hash> needToRequest = new CopyOnWriteArraySet<Sha256Hash>();
+        log.info("downloadDependenciesInternal looping inputs");
+        log.info("{}: Downloading dependencies of {}", getAddress(), tx.getHashAsString());
         for (TransactionInput input : tx.getInputs()) {
             // There may be multiple inputs that connect to the same transaction.
             Sha256Hash hash = input.getOutpoint().getHash();
+            log.info("Input: {}", hash);
             Transaction dep = memoryPool.get(hash);
             if (dep == null) {
+        	log.info("needToRequest");
                 needToRequest.add(hash);
             } else {
+        	log.info("adding");
                 dependencies.add(dep);
             }
         }
@@ -709,6 +714,7 @@ public class Peer extends PeerSocketHandler {
                 futures.add(Futures.immediateFuture(dep));
             }
             ListenableFuture<List<Transaction>> successful = Futures.successfulAsList(futures);
+            log.info("addcallback");
             Futures.addCallback(successful, new FutureCallback<List<Transaction>>() {
                 public void onSuccess(List<Transaction> transactions) {
                     // Once all transactions either were received, or we know there are no more to come ...
@@ -744,6 +750,7 @@ public class Peer extends PeerSocketHandler {
                 }
             });
             // Start the operation.
+            log.info("sendmessage");
             sendMessage(getdata);
             if (!isNotFoundMessageSupported()) {
                 // If the peer isn't new enough to support the notfound message, we use a nasty hack instead and
@@ -764,6 +771,7 @@ public class Peer extends PeerSocketHandler {
                     }
                 }, Threading.SAME_THREAD);
             }
+            log.info("sendmessage done");
         } catch (Exception e) {
             log.error("{}: Couldn't send getdata in downloadDependencies({})", this, tx.getHash());
             resultFuture.setException(e);
@@ -771,6 +779,7 @@ public class Peer extends PeerSocketHandler {
         } finally {
             lock.unlock();
         }
+        log.info("downloadDependenciesInternal done");
         return resultFuture;
     }
 
@@ -1390,7 +1399,7 @@ public class Peer extends PeerSocketHandler {
     }
 
     private boolean isNotFoundMessageSupported() {
-        return vPeerVersionMessage.clientVersion >= 70001;
+        return vPeerVersionMessage.clientVersion >= 1100000;
     }
 
     /**

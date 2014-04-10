@@ -104,19 +104,11 @@ public class AuroraCoinParams extends NetworkParameters {
 
         dnsSeeds = new String[] {
                 //"dnsseed.aurora.so",
-        		"46.149.22.91",
-        		"46.149.22.99",
         		"46.149.22.167",
         		"46.149.22.122",
         		"46.149.18.153",
         		"95.85.31.58",
-        		"82.128.238.235",
-
-        		"93.158.203.104",
-        		"2.248.159.250",
-        		"93.31.123.188",
-        		"85.25.194.238",
-        		"5.9.157.150"
+        		"dnsseed.ilovebitcoin.fr"
         };
     }
 
