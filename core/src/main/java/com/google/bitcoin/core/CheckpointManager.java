@@ -69,6 +69,10 @@ public class CheckpointManager {
 
     protected final NetworkParameters params;
     protected final Sha256Hash dataHash;
+    static CheckpointManager myCheckpointManager = null;
+    public static CheckpointManager getCheckpointManager() {
+    	return myCheckpointManager;
+    }
 
     public CheckpointManager(NetworkParameters params, InputStream inputStream) throws IOException {
         this.params = checkNotNull(params);
@@ -153,12 +157,18 @@ public class CheckpointManager {
         checkNotNull(params);
         checkNotNull(store);
         checkArgument(!(store instanceof FullPrunedBlockStore), "You cannot use checkpointing with a full store.");
-
-        time -= 86400 * 7;
-
         BufferedInputStream stream = new BufferedInputStream(checkpoints);
-        CheckpointManager manager = new CheckpointManager(params, stream);
-        StoredBlock checkpoint = manager.getCheckpointBefore(time);
+        myCheckpointManager = new CheckpointManager(params, stream);
+        StoredBlock checkpoint;
+        if (params.getKgwParams() != null) {
+            checkpoint = myCheckpointManager.getCheckpointBefore(time);
+        	time -= (params.getKgwParams().blocksTargetSpacing * params.getKgwParams().pastBlocksMax);
+            checkpoint = myCheckpointManager.getCheckpointBefore(time);
+        }
+        else {
+        	time -= 86400 * 7;
+            checkpoint = myCheckpointManager.getCheckpointBefore(time);
+        }
         store.put(checkpoint);
         store.setChainHead(checkpoint);
     }

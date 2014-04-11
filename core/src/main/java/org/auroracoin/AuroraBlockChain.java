@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.bitcoin.core.Block;
 import com.google.bitcoin.core.BlockChain;
 import com.google.bitcoin.core.BlockChainListener;
+import com.google.bitcoin.core.CheckpointManager;
 import com.google.bitcoin.core.NetworkParameters;
 import com.google.bitcoin.core.NetworkParameters.KGWParams;
 import com.google.bitcoin.core.StoredBlock;
@@ -79,6 +80,12 @@ public class AuroraBlockChain extends BlockChain {
         BigInteger newDifficulty;
         
     	if ((storedPrev.getHeight()+1) > 5400) {
+    		CheckpointManager manager = CheckpointManager.getCheckpointManager();
+    		long currentTime = System.currentTimeMillis() / 1000L;
+    		if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
+    			log.info("Block before latest checkpoint, difficulty not checked");
+    			return;
+    		} 
     		newDifficulty = gravityWellDiff(storedPrev, nextBlock, params.getKgwParams());
         } else {
     	
