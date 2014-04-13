@@ -258,6 +258,7 @@ public class PeerDBDiscovery implements PeerDiscovery {
             @Override
             public Message onPreMessageReceived(Peer p, Message m) {
                 if (m instanceof AddressMessage) {
+                    log.info("DBDiscovery, got AddressMessage "+ ((AddressMessage) m).getAddresses() + " peers");
                     for (PeerAddress address : ((AddressMessage) m).getAddresses())
                         addAddress(address, p.getAddress());
                 }

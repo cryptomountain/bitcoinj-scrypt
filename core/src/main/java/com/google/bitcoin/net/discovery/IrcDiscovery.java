@@ -227,7 +227,7 @@ public class IrcDiscovery implements PeerDiscovery {
 
             byte[] ipBytes = new byte[]{addressBytes[0], addressBytes[1], addressBytes[2], addressBytes[3]};
             int port = Utils.readUint16BE(addressBytes, 4);
-
+            if (port == 12341) port = 12340; //get around that stupid bug
             InetAddress ip;
             try {
                 ip = InetAddress.getByAddress(ipBytes);
