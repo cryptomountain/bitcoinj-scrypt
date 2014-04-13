@@ -37,7 +37,7 @@ public class AuroraCoinParams extends NetworkParameters {
 	public static final String ID_AURORACOIN = "org.auroracoin.production";
     protected static final int targetKGWTimespan = (int)(5 * 60);
     private static final int	timeDaySeconds = 60 * 60 * 24;
-	private static final long PastSecondsMin	= timeDaySeconds / 2; //* 0.5;
+	private static final long PastSecondsMin	= timeDaySeconds / 2; // * 0.5;
 	private static final long PastSecondsMax	= timeDaySeconds * 14;
 	private static final long PastBlocksMin	= PastSecondsMin / targetKGWTimespan;
 	private static final long PastBlocksMax	= PastSecondsMax / targetKGWTimespan;	
