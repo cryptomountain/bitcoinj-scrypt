@@ -41,7 +41,7 @@ public class BuildCheckpoints {
         long now = new Date().getTime() / 1000;
         peerGroup.setFastCatchupTimeSecs(now);
 
-        final long oneMonthAgo = now - (86400 * 7);
+        final long oneMonthAgo = now - (86400 * 3);
 
         chain.addListener(new AbstractBlockChainListener() {
             @Override
