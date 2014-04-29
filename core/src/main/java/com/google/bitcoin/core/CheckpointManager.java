@@ -162,6 +162,7 @@ public class CheckpointManager {
         StoredBlock checkpoint;
         if (params.getKgwParams() != null) {
             checkpoint = myCheckpointManager.getCheckpointBefore(time);
+            time = checkpoint.getHeader().getTimeSeconds();
         	time -= (params.getKgwParams().blocksTargetSpacing * params.getKgwParams().pastBlocksMax);
         	time -= 86400 * 2;
             checkpoint = myCheckpointManager.getCheckpointBefore(time);
