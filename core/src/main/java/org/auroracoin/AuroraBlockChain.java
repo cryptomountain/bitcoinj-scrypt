@@ -16,24 +16,16 @@
 
 package org.auroracoin;
 
-import static com.google.common.base.Preconditions.checkState;
-
-import com.google.bitcoin.core.Block;
-import com.google.bitcoin.core.BlockChain;
-import com.google.bitcoin.core.BlockChainListener;
-import com.google.bitcoin.core.CheckpointManager;
-import com.google.bitcoin.core.NetworkParameters;
+import com.google.bitcoin.core.*;
 import com.google.bitcoin.core.NetworkParameters.KGWParams;
-import com.google.bitcoin.core.StoredBlock;
-import com.google.bitcoin.core.Utils;
-import com.google.bitcoin.core.VerificationException;
-import com.google.bitcoin.core.Wallet;
-import com.google.bitcoin.params.TestNet3Params;
 import com.google.bitcoin.store.BlockStore;
 import com.google.bitcoin.store.BlockStoreException;
+import hashengineering.difficulty.KimotoGravityWell.kgw;
 
 import java.math.BigInteger;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * <p>A BlockChain implements the <i>simplified payment verification</i> mode of the Bitcoin protocol. It is the right
@@ -85,8 +77,11 @@ public class AuroraBlockChain extends BlockChain {
     		if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
     			log.info("Block before latest checkpoint, difficulty not checked");
     			return;
-    		} 
-    		newDifficulty = gravityWellDiff(storedPrev, nextBlock, params.getKgwParams());
+    		}
+    		if(!kgw.isNativeLibraryLoaded())
+    		    newDifficulty = gravityWellDiff(storedPrev, nextBlock, params.getKgwParams());
+    		else
+    		    newDifficulty = gravityWellDiff_N(storedPrev, nextBlock, params.getKgwParams());
         } else {
     	
 	        Block prev = storedPrev.getHeader();
@@ -164,16 +159,7 @@ public class AuroraBlockChain extends BlockChain {
 		       //log.info("    is  " + newDifficulty.toString(16));
 	    	} 
         } 
-    	//{
-    	//	static const int64	BlocksTargetSpacing			= 5 * 60; // 5 minutes 
-    	//	unsigned int		TimeDaySeconds				= 60 * 60 * 24;
-    	//	int64				PastSecondsMin				= TimeDaySeconds * 0.5;
-    	//	int64				PastSecondsMax				= TimeDaySeconds * 14;
-    	//	uint64				PastBlocksMin				= PastSecondsMin / BlocksTargetSpacing;
-    	//	uint64				PastBlocksMax				= PastSecondsMax / BlocksTargetSpacing;	
-    	//	
-    	//	return GravityWell(pindexLast, pblock, BlocksTargetSpacing, PastBlocksMin, PastBlocksMax);
-    	//}
+
 
 	int accuracyBytes = (int) (nextBlock.getDifficultyTarget() >>> 24) - 3;
     	
@@ -276,69 +262,63 @@ public class AuroraBlockChain extends BlockChain {
     	return bnNew;
     }
 
-/*
- * 
 
-unsigned int static GravityWell(const CBlockIndex* pindexLast, const CBlock *pblock, uint64 TargetBlocksSpacingSeconds, uint64 PastBlocksMin, uint64 PastBlocksMax) {
+private BigInteger  gravityWellDiff_N(StoredBlock storedPrev, Block nextBlock, KGWParams kgwParams)  throws BlockStoreException, VerificationException {
+        StoredBlock         BlockLastSolved             = storedPrev;
+        StoredBlock         BlockReading                = storedPrev;
+        Block               BlockCreating               = nextBlock;
+        BlockCreating				= BlockCreating;
+        long				PastBlocksMass				= 0;
+        long				PastRateActualSeconds		= 0;
+        long				PastRateTargetSeconds		= 0;
+        double				PastRateAdjustmentRatio		= 1f;
+        BigInteger			PastDifficultyAverage = BigInteger.valueOf(0);
+        BigInteger			PastDifficultyAveragePrev = BigInteger.valueOf(0);;
+        double				EventHorizonDeviation;
+        double				EventHorizonDeviationFast;
+        double				EventHorizonDeviationSlow;
 
-	const CBlockIndex  *BlockLastSolved				= pindexLast;
-	const CBlockIndex  *BlockReading				= pindexLast;
-	uint64				PastBlocksMass				= 0;
-	int64				PastRateActualSeconds		= 0;
-	int64				PastRateTargetSeconds		= 0;
-	double				PastRateAdjustmentRatio		= double(1);
-	CBigNum				PastDifficultyAverage;
-	CBigNum				PastDifficultyAveragePrev;
-	double				EventHorizonDeviation;
-	double				EventHorizonDeviationFast;
-	double				EventHorizonDeviationSlow;
-	
-    if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || (uint64)BlockLastSolved->nHeight < PastBlocksMin) { return bnProofOfWorkLimit.GetCompact(); }
-	
-	for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
-		if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
-		PastBlocksMass++;
-		
-		if (i == 1)	{ PastDifficultyAverage.SetCompact(BlockReading->nBits); }
-		else		{ PastDifficultyAverage = ((CBigNum().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
-		PastDifficultyAveragePrev = PastDifficultyAverage;
-		
-		PastRateActualSeconds			= BlockLastSolved->GetBlockTime() - BlockReading->GetBlockTime();
-		PastRateTargetSeconds			= TargetBlocksSpacingSeconds * PastBlocksMass;
-		PastRateAdjustmentRatio			= double(1);
-		if (PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
-		if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
-		PastRateAdjustmentRatio			= double(PastRateTargetSeconds) / double(PastRateActualSeconds);
-		}
-		EventHorizonDeviation			= 1 + (0.7084 * pow((double(PastBlocksMass)/double(144)), -1.228));
-		EventHorizonDeviationFast		= EventHorizonDeviation;
-		EventHorizonDeviationSlow		= 1 / EventHorizonDeviation;
-		
-		if (PastBlocksMass >= PastBlocksMin) {
-			if ((PastRateAdjustmentRatio <= EventHorizonDeviationSlow) || (PastRateAdjustmentRatio >= EventHorizonDeviationFast)) { assert(BlockReading); break; }
-		}
-		if (BlockReading->pprev == NULL) { assert(BlockReading); break; }
-		BlockReading = BlockReading->pprev;
-	}
-	
-	CBigNum bnNew(PastDifficultyAverage);
-	if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
-		bnNew *= PastRateActualSeconds;
-		bnNew /= PastRateTargetSeconds;
-	}
-    if (bnNew > bnProofOfWorkLimit) { bnNew = bnProofOfWorkLimit; }
-	
-    /// debug print
-    printf("Difficulty Retarget - Gravity Well\n");
-    printf("PastRateAdjustmentRatio = %g\n", PastRateAdjustmentRatio);
-    printf("Before: %08x  %s\n", BlockLastSolved->nBits, CBigNum().SetCompact(BlockLastSolved->nBits).getuint256().ToString().c_str());
-    printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
-	
-	return bnNew.GetCompact();
-}
+        long start = System.currentTimeMillis();
+        long endLoop = 0;
+
+        if (BlockLastSolved == null || BlockLastSolved.getHeight() == 0 || (long)BlockLastSolved.getHeight() < kgwParams.pastBlocksMin)
+        { return params.getProofOfWorkLimit(); }
+
+        int i = 0;
+        //log.info("KGW: i = {}; height = {}; hash {} ", i, BlockReading.getHeight(), BlockReading.getHeader().getHashAsString());
+
+        long totalCalcTime = 0;
+        long totalReadtime = 0;
+        long totalBigIntTime = 0;
+
+        int init_result = kgw.KimotoGravityWell_init(kgwParams.blocksTargetSpacing, kgwParams.pastBlocksMin, kgwParams.pastBlocksMax, 144d);
 
 
+        for (i = 1; BlockReading != null && BlockReading.getHeight() > 0; i++) {
+            int result = kgw.KimotoGravityWell_loop2(i, BlockReading.getHeader().getDifficultyTarget(),BlockReading.getHeight(), BlockReading.getHeader().getTimeSeconds(), BlockLastSolved.getHeader().getTimeSeconds());
+            BigInteger diff = BlockReading.getHeader().getDifficultyTargetAsInteger();
+            //if(i == 1)
+            //    log.info("KGW-N2: difficulty of i=1: " + BlockReading.getHeader().getDifficultyTarget() +"->"+ diff.toString(16));
+            if(result == 1)
+                break;
+            if(result == 2)
+                return null;
+            
+            long calcTime = System.currentTimeMillis();
+            StoredBlock BlockReadingPrev = blockStore.get(BlockReading.getHeader().getPrevBlockHash());
+            if (BlockReadingPrev == null)
+            {
+                //If this is triggered, then we are using checkpoints and haven't downloaded enough blocks to verify the difficulty.
+                //assert(BlockReading);     //from C++ code
+                //break;                    //from C++ code
+                return null;
+            }
+            BlockReading = BlockReadingPrev;
+        }
 
- * 
- */
+        BigInteger newDifficulty = new BigInteger(kgw.KimotoGravityWell_close());
+
+        return newDifficulty;
+    }
+
 }
