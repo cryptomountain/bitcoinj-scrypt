@@ -42,7 +42,7 @@ public class SexcoinPeerDBDiscovery extends PeerDBDiscovery {
         @Override
         public void onPeerConnected(Peer p, int peerCount) {
             if ((p.getPeerVersionMessage().localServices & (1<<1)) == (1<<1) &&
-                    p.getPeerVersionMessage().clientVersion >= 70002)
+                    p.getPeerVersionMessage().clientVersion >= 60011)  // sexcoin **check this**
                 parent.onPeerConnected(p, peerCount);
             else
                 p.close();

@@ -20,7 +20,7 @@ public class SexcoinParams extends NetworkParameters {
 	 * and testing of applications and new Bitcoin versions.
 	 */
 	public static final String ID_SEXCOIN = "org.sexcoin.production";
-	protected static final int targetKGWTimespan = (int)(60); // 60 seconds per block
+	protected static final int targetKGWTimespan = (int)(60); // sexcoin: 60 seconds per block
     private static final int	timeDaySeconds = 60 * 60 * 24;
 	private static final long PastSecondsMin	= timeDaySeconds / 2; // * 0.5;
 	private static final long PastSecondsMax	= timeDaySeconds * 14;
@@ -45,18 +45,18 @@ public class SexcoinParams extends NetworkParameters {
 	        // TODO Adjust these for Sexcoin
 	        id = ID_SEXCOIN;
 	        proofOfWorkLimit = Utils.decodeCompactBits(0x1e0fffffL);
-	        addressHeader = 48;
-	        acceptableAddressCodes = new int[] { 48 };
-	        port = 9560;
-	        packetMagic = 0xface6969L;
+	        addressHeader = 62;                            // sexcoin
+	        acceptableAddressCodes = new int[] { addressHeader }; // sexcoin
+	        port = 9560;                                   // sexcoin
+	        packetMagic = 0xface6969L;                     // sexcoin
 	        dumpedPrivateKeyHeader = 128 + addressHeader;
 
-	        targetTimespan = (int)(3.5 * 24 * 60 * 60);
-	        interval = targetTimespan/((int)(2.5 * 60));
+	        targetTimespan = (int)(3.5 * 24 * 60 * 60);    
+	        interval = targetTimespan/((int)(1 * 60));     // sexcoin
 
-	        genesisBlock.setDifficultyTarget(0x1e7fffffL);
-	        genesisBlock.setTime(1369146359L);
-	        genesisBlock.setNonce(244086L);
+	        genesisBlock.setDifficultyTarget(0x1e7fffffL); // sexcoin
+	        genesisBlock.setTime(1369146359L);             // sexcoin
+	        genesisBlock.setNonce(244086L);                // sexcoin
 	        genesisBlock.removeTransaction(0);
 	        Transaction t = new Transaction(this);
 	        try {
@@ -65,12 +65,12 @@ public class SexcoinParams extends NetworkParameters {
 	            //   "Disaster from the sky in Oklahoma"
 
 	            byte[] bytes = Hex.decode
-/* TODO */	             ("04ffff001d0104404e592054696d65732030352f4f63742f32303131205374657665204a6f62732c204170706c65e280997320566973696f6e6172792c2044696573206174203536");
+/* TODO */	             ("04ffff001d0104404e592054696d65732030352f4f63742f32303131205374657665204a6f62732c204170706c65e280997320566973696f6e6172792c2044696573206174203536"); //litecoin
 	            t.addInput(new TransactionInput(this, t, bytes));
 	            ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
 	            Script.writeBytes(scriptPubKeyBytes, Hex.decode
-	            		("04a5814813115273a109cff99907ba4a05d951873dae7acb6c973d0c9e7c88911a3dbc9aa600deac241b91707e7b4ffb30ad91c8e56e695a1ddf318592988afe0a"));
-// TODO */	            ("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9"));
+	            		("04a5814813115273a109cff99907ba4a05d951873dae7acb6c973d0c9e7c88911a3dbc9aa600deac241b91707e7b4ffb30ad91c8e56e695a1ddf318592988afe0a")); // auroracoin
+// TODO */	            ("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9")); //sexcoin
 	            scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
 	            t.addOutput(new TransactionOutput(this, t, Utils.toNanoCoins(50, 0), scriptPubKeyBytes.toByteArray()));
 	        } catch (Exception e) {
@@ -81,10 +81,10 @@ public class SexcoinParams extends NetworkParameters {
 	        String genesisHash = genesisBlock.getHashAsString();
 //	        checkState(genesisHash.equals("12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"),
 //	                genesisBlock);
-	        checkState(genesisHash.equals("2946a91685f253cd2ca29cde8cc35d7773cab280cdab4a075f613636e697aca4"),
+	        checkState(genesisHash.equals("2946a91685f253cd2ca29cde8cc35d7773cab280cdab4a075f613636e697aca4"), // sexcoin
 	        		genesisBlock);
 
-	        subsidyDecreaseBlockCount = 840000;
+	        subsidyDecreaseBlockCount = 600000; //sexcoin
 
 	        dnsSeeds = new String[] {
 	                "dnsseed.litecointools.com",
@@ -133,7 +133,7 @@ public class SexcoinParams extends NetworkParameters {
 
 	    static {
 	        NetworkParameters.registerParams(get());
-	        NetworkParameters.PROTOCOL_VERSION = 60002;
+	        NetworkParameters.PROTOCOL_VERSION = 60011; //sexcoin
 	    }
 }
 

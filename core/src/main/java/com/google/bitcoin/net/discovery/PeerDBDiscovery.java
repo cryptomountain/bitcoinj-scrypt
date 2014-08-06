@@ -313,10 +313,15 @@ public class PeerDBDiscovery implements PeerDiscovery {
         try {
             InputStream s = new FileInputStream(f);
             byte[] versionAndRandomKeyBytes = new byte[12];
-            if (s.read(versionAndRandomKeyBytes) != versionAndRandomKeyBytes.length)
-                return false;
-            if (Utils.readUint32(versionAndRandomKeyBytes, 0) != 1)
-                return false; // Newer version
+            if (s.read(versionAndRandomKeyBytes) != versionAndRandomKeyBytes.length){
+            	s.close();
+            	return false;
+            }
+                
+            if (Utils.readUint32(versionAndRandomKeyBytes, 0) != 1){
+                s.close();
+            	return false; // Newer version
+            }
             randomKey = Utils.readInt64(versionAndRandomKeyBytes, 4);
             for (int i = 0; i < TOTAL_SETS; i++) {
                 byte[] addressCountBytes = new byte[4];
@@ -329,13 +334,14 @@ public class PeerDBDiscovery implements PeerDiscovery {
                     addressToSetMap.put(peer.address.getAddr(), peer);
                 }
             }
+            s.close();
             return true;
         } catch (FileNotFoundException e) {
             return false;
         } catch (IOException e) {
             log.error("Error reading PeerDB from file", e);
             return false;
-        }
+        } 
     }
 
     //TODO Call on a regular basis
