@@ -7,6 +7,8 @@ import com.google.bitcoin.crypto.KeyCrypter;
 
 import java.math.BigInteger;
 
+// TODO: use sexcoin fee structure
+
 /**
  * An extension of BitcoinJ's wallet to use Litecoin's fee structure by default
  */
