@@ -65,12 +65,11 @@ public class SexcoinParams extends NetworkParameters {
 	            //   "Disaster from the sky in Oklahoma"
 
 	            byte[] bytes = Hex.decode
-/* TODO */	             ("04ffff001d0104404e592054696d65732030352f4f63742f32303131205374657665204a6f62732c204170706c65e280997320566973696f6e6172792c2044696573206174203536"); //litecoin
+	            		("04ffff001d01042144697361737465722066726f6d2074686520736b7920696e204f6b6c61686f6d61"); // sexcoin
 	            t.addInput(new TransactionInput(this, t, bytes));
 	            ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
 	            Script.writeBytes(scriptPubKeyBytes, Hex.decode
-	            		("04a5814813115273a109cff99907ba4a05d951873dae7acb6c973d0c9e7c88911a3dbc9aa600deac241b91707e7b4ffb30ad91c8e56e695a1ddf318592988afe0a")); // auroracoin
-// TODO */	            ("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9")); //sexcoin
+	            		("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9")); //sexcoin
 	            scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
 	            t.addOutput(new TransactionOutput(this, t, Utils.toNanoCoins(50, 0), scriptPubKeyBytes.toByteArray()));
 	        } catch (Exception e) {
@@ -79,9 +78,7 @@ public class SexcoinParams extends NetworkParameters {
 	        }
 	        genesisBlock.addTransaction(t);
 	        String genesisHash = genesisBlock.getHashAsString();
-//	        checkState(genesisHash.equals("12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"),
-//	                genesisBlock);
-	        checkState(genesisHash.equals("2946a91685f253cd2ca29cde8cc35d7773cab280cdab4a075f613636e697aca4"), // sexcoin
+	        checkState(genesisHash.equals("f42b9553085a1af63d659d3907a42c3a0052bbfa2693d3acf990af85755f2279"), // sexcoin
 	        		genesisBlock);
 
 	        subsidyDecreaseBlockCount = 600000; //sexcoin
