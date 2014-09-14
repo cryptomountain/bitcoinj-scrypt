@@ -36,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import org.sexcoin.SexcoinIrcDiscovery;
+
 /**
  * <p>Utility class that wraps the boilerplate needed to set up a new SPV bitcoinj app. Instantiate it with a directory
  * and file prefix, optionally configure a few things, then use start or startAndWait. The object will construct and
@@ -221,7 +223,8 @@ public class WalletAppKit extends AbstractIdleService {
                 for (PeerAddress addr : peerAddresses) vPeerGroup.addAddress(addr);
                 peerAddresses = null;
             } else {
-                vPeerGroup.addPeerDiscovery(new DnsDiscovery(params));
+                //vPeerGroup.addPeerDiscovery(new DnsDiscovery(params));
+            	//vPeerGroup.addPeerDiscovery(new SexcoinIrcDiscovery("#sexcoin00"));
             }
             vChain.addWallet(vWallet);
             vPeerGroup.addWallet(vWallet);

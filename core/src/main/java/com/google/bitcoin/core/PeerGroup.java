@@ -206,6 +206,7 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
      */
     public PeerGroup(NetworkParameters params, @Nullable AbstractBlockChain chain) {
         this(params, chain, new NioClientManager());
+        
     }
 
     /**
@@ -496,12 +497,17 @@ public class PeerGroup extends AbstractExecutionThreadService implements Transac
     }
 
     protected void discoverPeers() throws PeerDiscoveryException {
-        long start = System.currentTimeMillis();
+        log.info("discover peers...");
+    	long start = System.currentTimeMillis();
         Set<PeerAddress> addressSet = Sets.newHashSet();
+        log.info("peerDiscoverers = " + peerDiscoverers.size() + ":" + peerDiscoverers.toString());
+        
         for (PeerDiscovery peerDiscovery : peerDiscoverers) {
             InetSocketAddress[] addresses;
             addresses = peerDiscovery.getPeers(5, TimeUnit.SECONDS);
+            log.info("num_addresses = " + addresses.length);
             for (InetSocketAddress address : addresses) {
+            	log.info("address: " + address.toString());
                 if(address != null)
                     addressSet.add(new PeerAddress(address));
             }

@@ -35,11 +35,11 @@ public class SexcoinIrcDiscovery implements PeerDiscovery {
      * Finds a list of peers by connecting to an IRC network, joining a channel, decoding the nicks and then
      * disconnecting.
      *
-     * @param channel The IRC channel to join, either "#sexcoin" or "#sexcoinTEST3" for the production and test networks
+     * @param channel The IRC channel to join, either "#sexcoin00" or "#sexcoinTEST3" for the production and test networks
      *                respectively.
      */
     public SexcoinIrcDiscovery(String channel) {
-        this(channel, "irc.smutfairy.org", 6667); // sexcoin
+        this(channel, "irc.smutfairy.com", 6667); // sexcoin
     }
 
     /**
@@ -56,11 +56,11 @@ public class SexcoinIrcDiscovery implements PeerDiscovery {
     }
 
     protected void onIRCSend(String message) {
-        //log.info("IRC Send: "+message);
+        log.info("IRC Send: "+message);
     }
 
     protected void onIRCReceive(String message) {
-        //log.info("IRC Receive: "+message);
+        log.info("IRC Receive: "+message);
     }
 
     public void shutdown() {
@@ -78,7 +78,7 @@ public class SexcoinIrcDiscovery implements PeerDiscovery {
      * for the given server, so a timeout value of 1 second may result in 5 seconds delay if 5 servers are advertised.
      */
     public InetSocketAddress[] getPeers(long timeoutValue, TimeUnit timeoutUnit) throws PeerDiscoveryException {
-        log.info("IrcDiscovery, getpeers ");
+        log.info("IrcDiscovery, getpeers [" + server + ":" + port + "]");
         ArrayList<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>();
         connection = null;
         BufferedReader reader = null;
@@ -88,7 +88,8 @@ public class SexcoinIrcDiscovery implements PeerDiscovery {
             int ipCursorStart = (int)(Math.random()*ips.length);
             int ipCursor = ipCursorStart;
             do {
-                connection = new Socket();
+                log.info("opening connection...");
+            	connection = new Socket();
                 int timeoutMsec = (int) TimeUnit.MILLISECONDS.convert(timeoutValue, timeoutUnit);
                 connection.setSoTimeout(timeoutMsec);
                 try {
@@ -96,13 +97,20 @@ public class SexcoinIrcDiscovery implements PeerDiscovery {
                     log.info("Connecting to IRC with " + ip + ":" + port);
                     connection.connect(new InetSocketAddress(ip, port), timeoutMsec);
                 } catch (SocketTimeoutException e) {
+                	log.info("SOCKET TIMEOUT IRC");
                     connection = null;
                 } catch (IOException e) {
+                	log.info("IOException IRC");
                     connection = null;
                 }
+                log.info("GOT IPs ...");
                 ipCursor = (ipCursor + 1) % ips.length;
                 if (ipCursor == ipCursorStart) {
-                    throw new PeerDiscoveryException("Could not connect to " + server);
+                	log.info("WTF!!! IRC");
+                    //throw new PeerDiscoveryException("Could not connect to " + server);
+                }
+                if(connection == null){
+                	log.info("Attempted connection to server " + server + "failed...");
                 }
             } while (connection == null);
             log.info("Connected to IRC");
@@ -141,6 +149,7 @@ public class SexcoinIrcDiscovery implements PeerDiscovery {
             // A list of the users should be returned. Look for code 353 and parse until code 366.
             while ((currLine = reader.readLine()) != null) {
                 onIRCReceive(currLine);
+                log.info("**IRC CONVERSATION**: " + currLine);
                 if (checkLineStatus("353", currLine)) {
                     // Line contains users. List follows ":" (second ":" if line starts with ":")
                     int subIndex = 0;

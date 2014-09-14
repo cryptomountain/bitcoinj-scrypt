@@ -29,6 +29,7 @@ public class SexcoinBlockChain extends BlockChain {
      */
     public SexcoinBlockChain(NetworkParameters params, Wallet wallet, BlockStore blockStore) throws BlockStoreException {
     	super(params,wallet,blockStore);
+    	log.info("SexcoinBlockChain (1) class creating...");
     }
 
     /**
@@ -37,6 +38,7 @@ public class SexcoinBlockChain extends BlockChain {
      */
     public SexcoinBlockChain(NetworkParameters params, BlockStore blockStore) throws BlockStoreException {
     	super(params, blockStore);
+    	log.info("SexcoinBlockChain (2) class creating...");
     }
 
     /**
@@ -45,6 +47,7 @@ public class SexcoinBlockChain extends BlockChain {
     public SexcoinBlockChain(NetworkParameters params, List<BlockChainListener> wallets,
                       BlockStore blockStore) throws BlockStoreException {
         super(params, wallets, blockStore);
+        log.info("SexcoinBlockChain (3) class creating...");
     }
 
     /**
@@ -54,8 +57,9 @@ public class SexcoinBlockChain extends BlockChain {
     protected void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
         checkState(lock.isHeldByCurrentThread());
         BigInteger newDifficulty;
-        
-    	if ((storedPrev.getHeight()+1) > 5400) {
+        log.info("Difficulty Transition...");
+    	//if ((storedPrev.getHeight()+1) > 5400) {
+        if ((storedPrev.getHeight()+1) > 800000) {
     		CheckpointManager manager = CheckpointManager.getCheckpointManager();
     		long currentTime = System.currentTimeMillis() / 1000L;
     		if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
@@ -113,18 +117,18 @@ public class SexcoinBlockChain extends BlockChain {
 	        if(cursor == null) return;
 	
 	        Block blockIntervalAgo = cursor.getHeader();
-	        //log.info("Using block " + cursor.getHeight() + " to calculate next difficulty");
-	        //log.info(cursor.toString());
+	        log.info("Using block " + cursor.getHeight() + " to calculate next difficulty");
+	        log.info(cursor.toString());
 	        int timespan = (int) (prev.getTimeSeconds() - blockIntervalAgo.getTimeSeconds());
 	        final int targetTimespan = params.getTargetTimespan();
 	        newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
-	    	if ((storedPrev.getHeight()+1) < 135)
+	    	if ((storedPrev.getHeight()+1) < 479)
 	    		newDifficulty = params.getProofOfWorkLimit();
 	    	else 
 	    	{
 	        	
 	        	int nActualTimespan = timespan;
-	        	//log.info(" nActualTimespan = " + nActualTimespan + " before bounds\n");        
+	        	log.info(" nActualTimespan = " + nActualTimespan + " before bounds\n");        
 	
 		            int nActualTimespanMax = ((targetTimespan*75)/50);
 		            int nActualTimespanMin = ((targetTimespan*50)/75);
@@ -134,13 +138,13 @@ public class SexcoinBlockChain extends BlockChain {
 		       if (nActualTimespan > nActualTimespanMax)
 		           nActualTimespan = nActualTimespanMax;
 		       
-		       //log.info("Old diff target: " + newDifficulty.toString(16));
+		       log.info("Old diff target: " + newDifficulty.toString(16));
 		       newDifficulty = newDifficulty.multiply(BigInteger.valueOf(nActualTimespan));
-		       //log.info("Times " + nActualTimespan);
-		       //log.info("    is  " + newDifficulty.toString(16));
+		       log.info("Times " + nActualTimespan);
+		       log.info("    is  " + newDifficulty.toString(16));
 		       newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
-	           //log.info("Div by " + targetTimespan);
-		       //log.info("    is  " + newDifficulty.toString(16));
+	           log.info("Div by " + targetTimespan);
+		       log.info("    is  " + newDifficulty.toString(16));
 	    	} 
         } 
 
@@ -151,13 +155,13 @@ public class SexcoinBlockChain extends BlockChain {
 	BigInteger mask = BigInteger.valueOf(0xFFFFFFL).shiftLeft(accuracyBytes * 8);
 	newDifficulty = newDifficulty.and(mask);
 
-        	
+        log.info("newDifficulty is calculated at " + newDifficulty.toString(16));	
         if (newDifficulty.compareTo(params.getProofOfWorkLimit()) > 0) {
             log.info("Difficulty hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
             newDifficulty = params.getProofOfWorkLimit();
             log.info("Setting to: {}", newDifficulty.toString(16));
         } else {
-            //log.info("Difficulty did not hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
+            log.info("Difficulty did not hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
         }
 
         BigInteger receivedDifficulty = nextBlock.getDifficultyTargetAsInteger();
@@ -165,8 +169,8 @@ public class SexcoinBlockChain extends BlockChain {
             throw new VerificationException("Network provided difficulty bits do not match what was calculated: " +
                     receivedDifficulty.toString(16) + " vs " + newDifficulty.toString(16));
         else {
-        	//log.info("Network provided difficulty bits match what was calculated: " +
-            //        receivedDifficulty.toString(16) + " vs " + newDifficulty.toString(16));        
+        	log.info("Network provided difficulty bits match what was calculated: " +
+                    receivedDifficulty.toString(16) + " vs " + newDifficulty.toString(16));        
        }
     }
 
@@ -232,17 +236,17 @@ public class SexcoinBlockChain extends BlockChain {
 	log.info("Before: " + storedPrev.getHeader().getDifficultyTargetAsInteger().toString(16));
 	log.info("After: " + bnNew.toString(16));
 
-    	/*
-    	if (bnNew > bnProofOfWorkLimit) { bnNew = bnProofOfWorkLimit; }
     	
-        /// debug print
-        printf("Difficulty Retarget - Gravity Well\n");
-        printf("PastRateAdjustmentRatio = %g\n", PastRateAdjustmentRatio);
-        printf("Before: %08x  %s\n", BlockLastSolved->nBits, CBigNum().SetCompact(BlockLastSolved->nBits).getuint256().ToString().c_str());
-        printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
+//    	if (bnNew > bnProofOfWorkLimit) { bnNew = bnProofOfWorkLimit; }
+//    	
+//        /// debug print
+//        printf("Difficulty Retarget - Gravity Well\n");
+//        printf("PastRateAdjustmentRatio = %g\n", PastRateAdjustmentRatio);
+//        printf("Before: %08x  %s\n", BlockLastSolved->nBits, CBigNum().SetCompact(BlockLastSolved->nBits).getuint256().ToString().c_str());
+//        printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
+//    	
+//    	return bnNew.GetCompact();
     	
-    	return bnNew.GetCompact();
-    	*/
     	return bnNew;
     }
 
@@ -269,7 +273,7 @@ private BigInteger  gravityWellDiff_N(StoredBlock storedPrev, Block nextBlock, K
         { return params.getProofOfWorkLimit(); }
 
         int i = 0;
-        //log.info("KGW: i = {}; height = {}; hash {} ", i, BlockReading.getHeight(), BlockReading.getHeader().getHashAsString());
+        log.info("KGW: i = {}; height = {}; hash {} ", i, BlockReading.getHeight(), BlockReading.getHeader().getHashAsString());
 
         long totalCalcTime = 0;
         long totalReadtime = 0;
@@ -281,8 +285,8 @@ private BigInteger  gravityWellDiff_N(StoredBlock storedPrev, Block nextBlock, K
         for (i = 1; BlockReading != null && BlockReading.getHeight() > 0; i++) {
             int result = kgw.KimotoGravityWell_loop2(i, BlockReading.getHeader().getDifficultyTarget(),BlockReading.getHeight(), BlockReading.getHeader().getTimeSeconds(), BlockLastSolved.getHeader().getTimeSeconds());
             BigInteger diff = BlockReading.getHeader().getDifficultyTargetAsInteger();
-            //if(i == 1)
-            //    log.info("KGW-N2: difficulty of i=1: " + BlockReading.getHeader().getDifficultyTarget() +"->"+ diff.toString(16));
+            if(i == 1)
+                log.info("KGW-N2: difficulty of i=1: " + BlockReading.getHeader().getDifficultyTarget() +"->"+ diff.toString(16));
             if(result == 1)
                 break;
             if(result == 2)

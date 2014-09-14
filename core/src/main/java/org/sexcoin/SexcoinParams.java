@@ -20,23 +20,46 @@ public class SexcoinParams extends NetworkParameters {
 	 * and testing of applications and new Bitcoin versions.
 	 */
 	public static final String ID_SEXCOIN = "org.sexcoin.production";
+	private static final int FIX_KGW_TIMEWARP_HEIGHT = 643808;
 	protected static final int targetKGWTimespan = (int)(60); // sexcoin: 60 seconds per block
     private static final int	timeDaySeconds = 60 * 60 * 24;
 	private static final long PastSecondsMin	= timeDaySeconds / 2; // * 0.5;
 	private static final long PastSecondsMax	= timeDaySeconds * 14;
 	private static final long PastBlocksMin	= PastSecondsMin / targetKGWTimespan;
-	private static final long PastBlocksMax	= PastSecondsMax / targetKGWTimespan;	
+	private static final long PastBlocksMax	= PastSecondsMax / targetKGWTimespan;
+	
 
     private KGWParams kgwParams= new KGWParams(targetKGWTimespan, PastBlocksMin, PastBlocksMax);
+    
+    protected int targetTimespan_1;
+    protected int targetTimespan_2;
+    protected int interval_1;
+    protected int interval_2;
     
     @Override
     public KGWParams getKgwParams() {
 		return kgwParams;
 	}
     
-	public int getTargetTimespan(int blockHeight) {
-    	if (blockHeight < 5401) return this.getTargetTimespan();
+    @Override
+    public int getTargetTimespan(){
+    	return this.targetTimespan;
+    }
+    
+    public int getTargetTimespan(int blockHeight){
+    	if( blockHeight <= 155000 ) return this.targetTimespan;
+    	if( blockHeight  > 155000 && blockHeight < 572001) return this.targetTimespan_1;
+    	if( blockHeight > 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.targetTimespan_2;
     	return targetKGWTimespan;
+    	
+    }
+    
+    public int getInterval(int blockHeight){
+    	if( blockHeight <= 155000 ) return this.interval;
+    	if( blockHeight  > 155000 && blockHeight < 572001) return this.interval_1;
+    	if( blockHeight > 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.interval_2;
+    	return this.interval_2;
+    	
     }
     
     public SexcoinParams() {
@@ -44,15 +67,26 @@ public class SexcoinParams extends NetworkParameters {
 	        
 	        // TODO Adjust these for Sexcoin
 	        id = ID_SEXCOIN;
-	        proofOfWorkLimit = Utils.decodeCompactBits(0x1e0fffffL);
+	        proofOfWorkLimit = Utils.decodeCompactBits(0x1e7fffffL);
+	        //proofOfWorkLimit = Utils.decodeCompactBits(0x1d00ffffL);
 	        addressHeader = 62;                            // sexcoin
 	        acceptableAddressCodes = new int[] { addressHeader }; // sexcoin
 	        port = 9560;                                   // sexcoin
-	        packetMagic = 0xface6969L;                     // sexcoin
+	        packetMagic = 0xface6969L;						// sexcoin
+	       // packetMagic = 0xfbc0b6dbL;					// sexcoin block < 155000
 	        dumpedPrivateKeyHeader = 128 + addressHeader;
 
-	        targetTimespan = (int)(3.5 * 24 * 60 * 60);    
-	        interval = targetTimespan/((int)(1 * 60));     // sexcoin
+	        // up to block 155000
+	        targetTimespan = (int)(8 * 60 * 60); 			// sexcoin's original retarget was 8 hours   
+	        interval = targetTimespan/((int)(1 * 60));     // sexcoin [ every 480 blocks ]
+	        
+	        // between block 155000 and 572001
+	        targetTimespan_1 = (int)( 30 * 60);				// retarget for 30 minutes
+	        interval_1 = targetTimespan_1/((int)(30));
+	        
+	        // after block 572001
+	        targetTimespan_2 = (int)( 15 * 60 );
+	        interval_2 = targetTimespan_2/((int) 15);
 
 	        genesisBlock.setDifficultyTarget(0x1e7fffffL); // sexcoin
 	        genesisBlock.setTime(1369146359L);             // sexcoin
@@ -69,7 +103,8 @@ public class SexcoinParams extends NetworkParameters {
 	            t.addInput(new TransactionInput(this, t, bytes));
 	            ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
 	            Script.writeBytes(scriptPubKeyBytes, Hex.decode
-	            		("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9")); //sexcoin
+	            		("04a5814813115273a109cff99907ba4a05d951873dae7acb6c973d0c9e7c88911a3dbc9aa600deac241b91707e7b4ffb30ad91c8e56e695a1ddf318592988afe0a")); //sexcoin
+	            // OP_CHECKSIG shows up in abe as part of the PubKey, so we use the real key and add on the OP_CHECKSIG for consistency with bitcoin.		
 	            scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
 	            t.addOutput(new TransactionOutput(this, t, Utils.toNanoCoins(50, 0), scriptPubKeyBytes.toByteArray()));
 	        } catch (Exception e) {
@@ -78,21 +113,26 @@ public class SexcoinParams extends NetworkParameters {
 	        }
 	        genesisBlock.addTransaction(t);
 	        String genesisHash = genesisBlock.getHashAsString();
-	        checkState(genesisHash.equals("f42b9553085a1af63d659d3907a42c3a0052bbfa2693d3acf990af85755f2279"), // sexcoin
-	        		genesisBlock);
+	        if(!genesisHash.equals("f42b9553085a1af63d659d3907a42c3a0052bbfa2693d3acf990af85755f2279"))
+	        {
+	        	System.out.println("genesis hash issue: " + genesisHash + " : " + "f42b9553085a1af63d659d3907a42c3a0052bbfa2693d3acf990af85755f2279" );
+	        	System.out.println("merkle root: " + genesisBlock.getMerkleRoot());
+	        	System.out.println("Nonce: " + genesisBlock.getNonce());
+	        	System.out.println("     : " + genesisBlock.toString());
+	        }else{
+	        	System.out.println("GenesisBlock : " + genesisBlock.toString());
+	        }
+	        //checkState(genesisHash.equals("f42b9553085a1af63d659d3907a42c3a0052bbfa2693d3acf990af85755f2279"), // sexcoin
+	        //		genesisBlock);
 
 	        subsidyDecreaseBlockCount = 600000; //sexcoin
 
 	        dnsSeeds = new String[] {
-	                "dnsseed.litecointools.com",
-	                "dnsseed.litecoinpool.org",
-	                "dnsseed.ltc.xurious.com",
-	                "dnsseed.koin-project.com",
-	                "dnsseed.weminemnc.com"
+	        	"dnsseed.lavajumper.com"
 	        };
 	    }
 
-	    private static BigInteger MAX_MONEY = Utils.COIN.multiply(BigInteger.valueOf(84000000));
+	    private static BigInteger MAX_MONEY = Utils.COIN.multiply(BigInteger.valueOf(250000000));
 	    @Override
 	    public BigInteger getMaxMoney() { return MAX_MONEY; }
 

@@ -316,6 +316,14 @@ public abstract class NetworkParameters implements Serializable {
     public int getTargetTimespan() {
         return targetTimespan;
     }
+    
+    /**
+     * Override this to handle difficulty adjustments via block heighths
+     * 
+     */
+    public int getTargetTimespan(int Height){
+    	return this.targetTimespan;
+    }
 
     /**
      * The version codes that prefix addresses which are acceptable on this network. Although Satoshi intended these to
@@ -336,6 +344,11 @@ public abstract class NetworkParameters implements Serializable {
     /** How many blocks pass between difficulty adjustment periods. Bitcoin standardises this to be 2015. */
     public int getInterval() {
         return interval;
+    }
+    
+    /** Override this to use interval adjustments via blockheighths     */
+    public int getInterval(int Height){
+    	return interval;
     }
 
     /** How many blocks pass between difficulty adjustment periods. Bitcoin standardises this to be 2015. */

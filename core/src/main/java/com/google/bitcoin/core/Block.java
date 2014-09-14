@@ -646,8 +646,8 @@ public class Block extends Message {
     public BigInteger getDifficultyTargetAsInteger() throws VerificationException {
         maybeParseHeader();
         BigInteger target = Utils.decodeCompactBits(difficultyTarget);
-        if (target.compareTo(BigInteger.ZERO) <= 0 || target.compareTo(params.proofOfWorkLimit) > 0)
-            throw new VerificationException("Difficulty target is bad: " + target.toString());
+        //if (target.compareTo(BigInteger.ZERO) <= 0 || target.compareTo(params.proofOfWorkLimit) > 0)
+        //    throw new VerificationException("Difficulty target is bad: " + target.toString());
         return target;
     }
 
@@ -788,7 +788,7 @@ public class Block extends Message {
         // Firstly we need to ensure this block does in fact represent real work done. If the difficulty is high
         // enough, it's probably been done by the network.
         maybeParseHeader();
-        checkProofOfWork(true);
+        checkProofOfWork(true); 
         checkTimestamp();
     }
 

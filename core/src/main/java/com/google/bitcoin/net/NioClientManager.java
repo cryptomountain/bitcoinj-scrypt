@@ -79,7 +79,8 @@ public class NioClientManager extends AbstractExecutionThreadService implements 
      * calls.
      */
     public NioClientManager() {
-        try {
+        log.info("Starting new client manager");
+    	try {
             selector = SelectorProvider.provider().openSelector();
         } catch (IOException e) {
             throw new RuntimeException(e); // Shouldn't ever happen

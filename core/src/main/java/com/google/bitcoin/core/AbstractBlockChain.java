@@ -26,7 +26,8 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
-import org.auroracoin.AuroraCoinParams;
+//import org.auroracoin.AuroraCoinParams;
+import org.sexcoin.SexcoinParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -288,7 +289,7 @@ public abstract class AbstractBlockChain {
             } catch (BlockStoreException e1) {
                 throw new RuntimeException(e1);
             }
-            throw new VerificationException("Could not verify block " + block.getHash().toString() + "\n" +
+            throw new VerificationException("(FILTERED)Could not verify block " + block.getHash().toString() + "\n" +
                     block.toString(), e);
         }
     }
@@ -847,6 +848,7 @@ public abstract class AbstractBlockChain {
         log.info(cursor.toString());
         int timespan = (int) (prev.getTimeSeconds() - blockIntervalAgo.getTimeSeconds());
         final int targetTimespan = params.getTargetTimespan();
+        //final int targetTimespan = params.getTargetTimespan(cursor.getHeight()); // need blockheight for sexcoin
         BigInteger newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
             // Limit the adjustment step.
 	        if (timespan < targetTimespan / 4)
