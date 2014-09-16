@@ -138,6 +138,7 @@ public class SexcoinIrcDiscovery implements PeerDiscovery {
                 if (checkLineStatus("004", currLine)) {
                     break;
                 }
+                
             }
 
             // Join the channel.

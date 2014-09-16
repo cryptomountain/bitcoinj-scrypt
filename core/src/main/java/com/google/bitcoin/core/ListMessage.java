@@ -99,9 +99,9 @@ public abstract class ListMessage extends Message {
                 case 2:
                     type = InventoryItem.Type.Block;
                     break;
-                case 3:
-                    type = InventoryItem.Type.FilteredBlock;
-                    break;
+                //case 3:  --JSC
+                //    type = InventoryItem.Type.FilteredBlock;
+                //    break;
                 default:
                     throw new ProtocolException("Unknown CInv type: " + typeCode);
             }

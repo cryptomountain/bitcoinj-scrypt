@@ -55,17 +55,23 @@ public class SexcoinBlockChain extends BlockChain {
      */
     @Override
     protected void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
-        checkState(lock.isHeldByCurrentThread());
+    	checkState(lock.isHeldByCurrentThread());
+    	//return;
+    	// for some reason sexcoin has got a rogue block, keep moving....
+    	//if(storedPrev.getHeight() == 580550) { return; }
+    	
+    	
         BigInteger newDifficulty;
-        log.info("Difficulty Transition...");
+        int currentHeight=storedPrev.getHeight() + 1;
+        log.info("Difficulty Transition Check @ " + currentHeight);
     	//if ((storedPrev.getHeight()+1) > 5400) {
-        if ((storedPrev.getHeight()+1) > 800000) {
-    		CheckpointManager manager = CheckpointManager.getCheckpointManager();
+        if ((storedPrev.getHeight()+1) > 571999) {
+    		//CheckpointManager manager = CheckpointManager.getCheckpointManager();
     		long currentTime = System.currentTimeMillis() / 1000L;
-    		if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
-    			log.info("Block before latest checkpoint, difficulty not checked");
-    			return;
-    		}
+    		//if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
+    		//	log.info("Block before latest checkpoint, difficulty not checked");
+    		//	return;
+    		//}
     		if(!kgw.isNativeLibraryLoaded())
     		    newDifficulty = gravityWellDiff(storedPrev, nextBlock, params.getKgwParams());
     		else
@@ -75,7 +81,7 @@ public class SexcoinBlockChain extends BlockChain {
 	        Block prev = storedPrev.getHeader();
 	        
 	        // Is this supposed to be a difficulty transition point?
-	        if ((storedPrev.getHeight() + 1) % params.getInterval() != 0) {
+	        if ((storedPrev.getHeight() + 1) % params.getInterval(currentHeight) != 0) {
 	
 	            // TODO: Refactor this hack after 0.5 is released and we stop supporting deserialization compatibility.
 	            // This should be a method of the NetworkParameters, which should in turn be using singletons and a subclass
@@ -98,8 +104,8 @@ public class SexcoinBlockChain extends BlockChain {
 	        long now = System.currentTimeMillis();
 	        StoredBlock cursor = blockStore.get(prev.getHash());
 	
-	        int goBack = params.getRetargetBlockCount(cursor);
-	
+	        int goBack = params.getRetargetBlockCount(cursor,currentHeight);
+	        log.info("goBack = " + goBack);
 	        for (int i = 0; i < goBack; i++) {
 	            if (cursor == null) {
 	                // This should never happen. If it does, it means we are following an incorrect or busted chain.
@@ -120,31 +126,33 @@ public class SexcoinBlockChain extends BlockChain {
 	        log.info("Using block " + cursor.getHeight() + " to calculate next difficulty");
 	        log.info(cursor.toString());
 	        int timespan = (int) (prev.getTimeSeconds() - blockIntervalAgo.getTimeSeconds());
-	        final int targetTimespan = params.getTargetTimespan();
+	        final int targetTimespan = params.getTargetTimespan(storedPrev.getHeight()+1);
 	        newDifficulty = Utils.decodeCompactBits(prev.getDifficultyTarget());
 	    	if ((storedPrev.getHeight()+1) < 479)
 	    		newDifficulty = params.getProofOfWorkLimit();
 	    	else 
 	    	{
 	        	
-	        	int nActualTimespan = timespan;
+	    		int nActualTimespan = timespan;
 	        	log.info(" nActualTimespan = " + nActualTimespan + " before bounds\n");        
 	
-		            int nActualTimespanMax = ((targetTimespan*75)/50);
-		            int nActualTimespanMin = ((targetTimespan*50)/75);
+		           // int nActualTimespanMax = ((targetTimespan*75)/50);
+		           // int nActualTimespanMin = ((targetTimespan*50)/75);
+	        	int nActualTimespanMax = targetTimespan*4;
+	        	int nActualTimespanMin = targetTimespan/4;
 		           
 		       if (nActualTimespan < nActualTimespanMin)
 		           nActualTimespan = nActualTimespanMin;
 		       if (nActualTimespan > nActualTimespanMax)
 		           nActualTimespan = nActualTimespanMax;
 		       
-		       log.info("Old diff target: " + newDifficulty.toString(16));
+		       //log.info("Old diff target: " + newDifficulty.toString(16));
 		       newDifficulty = newDifficulty.multiply(BigInteger.valueOf(nActualTimespan));
-		       log.info("Times " + nActualTimespan);
-		       log.info("    is  " + newDifficulty.toString(16));
+		       //log.info("Times " + nActualTimespan);
+		       //log.info("    is  " + newDifficulty.toString(16));
 		       newDifficulty = newDifficulty.divide(BigInteger.valueOf(targetTimespan));
-	           log.info("Div by " + targetTimespan);
-		       log.info("    is  " + newDifficulty.toString(16));
+	           //log.info("Div by " + targetTimespan);
+		       //log.info("    is  " + newDifficulty.toString(16));
 	    	} 
         } 
 
@@ -158,7 +166,8 @@ public class SexcoinBlockChain extends BlockChain {
         log.info("newDifficulty is calculated at " + newDifficulty.toString(16));	
         if (newDifficulty.compareTo(params.getProofOfWorkLimit()) > 0) {
             log.info("Difficulty hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
-            newDifficulty = params.getProofOfWorkLimit();
+            //newDifficulty = params.getProofOfWorkLimit();  // sexcoin doesn't honor this limit
+            
             log.info("Setting to: {}", newDifficulty.toString(16));
         } else {
             log.info("Difficulty did not hit proof of work limit: {}", params.getProofOfWorkLimit().toString(16));
@@ -172,11 +181,14 @@ public class SexcoinBlockChain extends BlockChain {
         	log.info("Network provided difficulty bits match what was calculated: " +
                     receivedDifficulty.toString(16) + " vs " + newDifficulty.toString(16));        
        }
+       
     }
 
     private BigInteger gravityWellDiff(StoredBlock storedPrev, Block nextBlock, KGWParams kgwParams) throws BlockStoreException {
-        if ((storedPrev == null) ||  (storedPrev.getHeight() == 0) ||  (storedPrev.getHeight() < kgwParams.pastBlocksMin)) 
+        //if(storedPrev.getHeight() == 580550 ) { return BigInteger.valueOf(0); }
+    	if ((storedPrev == null) ||  (storedPrev.getHeight() == 0) ||  (storedPrev.getHeight() < kgwParams.pastBlocksMin)) 
         {
+        	log.info("KGW short circuit...returning proof of work limit...");
         	return params.getProofOfWorkLimit();
        	}
     	long PastBlocksMass = 0;
@@ -222,22 +234,32 @@ public class SexcoinBlockChain extends BlockChain {
     		blockReading = blockReading.getPrev(blockStore);
     		if (blockReading == null) { /*assert(BlockReading);*/ break; }
        	}
+    	
+    	//log.info("KGW: PastBlocksMass = " + PastBlocksMass);
+    	//log.info("KGW: PastDifficultyAverage = " + PastDifficultyAverage);
+    	//log.info("KGW: PastRateActualSeconds = " + PastRateActualSeconds);
+    	//log.info("KGW: PastRateTargetSeconds = " + PastRateTargetSeconds);
+    	//log.info("KGW: ");
     	BigInteger bnNew = PastDifficultyAverage;
-	log.info("Average   : " + bnNew.toString(16));
+    	log.info("Average   : " + bnNew.toString(16));
     	if ((PastRateActualSeconds != 0) && (PastRateTargetSeconds != 0)) {
     		bnNew = bnNew.multiply(BigInteger.valueOf(PastRateActualSeconds));
-		log.info("Multiplied: " + bnNew.toString(16));
+    		//log.info("Multiplied: " + bnNew.toString(16));
     		bnNew = bnNew.divide(BigInteger.valueOf(PastRateTargetSeconds));
-		log.info("Divided   : " + bnNew.toString(16));
+    		//log.info("Divided   : " + bnNew.toString(16));
     	}
-	log.info("Difficulty Retarget - Gravity Well");
-	log.info("PastRateAdjustmentRatio = "+PastRateAdjustmentRatio);
-	log.info("PastRateAdjustmentRatio = "+PastRateActualSeconds + "/"+PastRateTargetSeconds);
-	log.info("Before: " + storedPrev.getHeader().getDifficultyTargetAsInteger().toString(16));
-	log.info("After: " + bnNew.toString(16));
+	
+    	log.info("Difficulty Retarget - Gravity Well");
+    	log.info("PastRateAdjustmentRatio = "+PastRateAdjustmentRatio);
+    	log.info("PastRateAdjustmentRatio = "+PastRateActualSeconds + "/"+PastRateTargetSeconds);
+    	log.info("Before: " + storedPrev.getHeader().getDifficultyTargetAsInteger().toString(16));
+    	log.info("After: " + bnNew.toString(16));
 
     	
-//    	if (bnNew > bnProofOfWorkLimit) { bnNew = bnProofOfWorkLimit; }
+    	if (bnNew.compareTo(params.getProofOfWorkLimit()) == 1) { 
+    		log.info("KGW - Proof of work limit hit..."); 
+    		bnNew = params.getProofOfWorkLimit(); 
+    	}
 //    	
 //        /// debug print
 //        printf("Difficulty Retarget - Gravity Well\n");

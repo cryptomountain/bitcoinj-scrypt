@@ -374,6 +374,9 @@ public abstract class NetworkParameters implements Serializable {
     /** The number of previous blocks to look at when calculating the next Block's difficulty
      *  Uses a storedblock cursor as input rather than just returning a constant value */
     public int getRetargetBlockCount(StoredBlock cursor) { return getInterval() - 1; }
+    
+    /** Override this to use blockHeigt awareness */
+    public int getRetargetBlockCount(StoredBlock cursor, int blockHeight ) { return getInterval(blockHeight); }
 
     /** Gets the hash of the given block for the purpose of checking its PoW */
     public Sha256Hash calculateBlockPoWHash(Block b) { return b.getHash(); }

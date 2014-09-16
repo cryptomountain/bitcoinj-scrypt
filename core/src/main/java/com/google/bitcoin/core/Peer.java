@@ -1039,8 +1039,10 @@ public class Peer extends PeerSocketHandler {
                         // the duplicate check in blockChainDownloadLocked(). But the satoshi client may change in future so
                         // it's better to be safe here.
                         if (!pendingBlockDownloads.contains(item.hash)) {
-                            if (vPeerVersionMessage.isBloomFilteringSupported() && useFilteredBlocks) {
-                                getdata.addItem(new InventoryItem(InventoryItem.Type.FilteredBlock, item.hash));
+                        	// sexcoin doesn't support message type 3 --- JSC
+                            //if (vPeerVersionMessage.isBloomFilteringSupported() && useFilteredBlocks) {
+                        	if(false){
+                                //getdata.addItem(new InventoryItem(InventoryItem.Type.FilteredBlock, item.hash));
                                 pingAfterGetData = true;
                             } else {
                                 getdata.addItem(item);

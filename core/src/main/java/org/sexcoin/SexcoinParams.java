@@ -23,8 +23,8 @@ public class SexcoinParams extends NetworkParameters {
 	private static final int FIX_KGW_TIMEWARP_HEIGHT = 643808;
 	protected static final int targetKGWTimespan = (int)(60); // sexcoin: 60 seconds per block
     private static final int	timeDaySeconds = 60 * 60 * 24;
-	private static final long PastSecondsMin	= timeDaySeconds / 2; // * 0.5;
-	private static final long PastSecondsMax	= timeDaySeconds * 14;
+	private static final long PastSecondsMin	= (long)(timeDaySeconds * 0.25); // * 0.5;
+	private static final long PastSecondsMax	= timeDaySeconds * 7;
 	private static final long PastBlocksMin	= PastSecondsMin / targetKGWTimespan;
 	private static final long PastBlocksMax	= PastSecondsMax / targetKGWTimespan;
 	
@@ -49,15 +49,16 @@ public class SexcoinParams extends NetworkParameters {
     public int getTargetTimespan(int blockHeight){
     	if( blockHeight <= 155000 ) return this.targetTimespan;
     	if( blockHeight  > 155000 && blockHeight < 572001) return this.targetTimespan_1;
-    	if( blockHeight > 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.targetTimespan_2;
+    	if( blockHeight >= 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.targetTimespan_2;
+    	
     	return targetKGWTimespan;
     	
     }
     
     public int getInterval(int blockHeight){
     	if( blockHeight <= 155000 ) return this.interval;
-    	if( blockHeight  > 155000 && blockHeight < 572001) return this.interval_1;
-    	if( blockHeight > 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.interval_2;
+    	if( blockHeight  > 155000 && blockHeight < 572000) return this.interval_1;
+    	if( blockHeight >= 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.interval_2;
     	return this.interval_2;
     	
     }
@@ -145,14 +146,15 @@ public class SexcoinParams extends NetworkParameters {
 	    }
 
 	    /** The number of previous blocks to look at when calculating the next Block's difficulty */
-	    @Override
-	    public int getRetargetBlockCount(StoredBlock cursor) {
+
+	    public int getRetargetBlockCount(StoredBlock cursor,int blockHeight) {
 	        if (cursor.getHeight() + 1 != getInterval()) {
-	            //Logger.getLogger("wallet_ltc").info("Normal LTC retarget");
-	            return getInterval();
+	            System.out.println("returning interval " + getInterval(blockHeight));
+	            
+	            return getInterval(blockHeight);
 	        } else {
 	            //Logger.getLogger("wallet_ltc").info("Genesis LTC retarget");
-	            return getInterval() - 1;
+	            return getInterval(blockHeight) - 1;
 	        }
 	    }
 

@@ -27,7 +27,7 @@ public class InventoryItem {
         Error,
         Transaction,
         Block,
-        FilteredBlock
+        //FilteredBlock
     }
 
     public final Type type;
