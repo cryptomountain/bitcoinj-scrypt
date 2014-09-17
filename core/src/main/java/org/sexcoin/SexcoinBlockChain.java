@@ -7,8 +7,10 @@ import com.google.bitcoin.store.BlockStoreException;
 import hashengineering.difficulty.KimotoGravityWell.kgw;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
-
+import java.util.ArrayList;
+import org.sexcoin.SexcoinParams;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
@@ -60,26 +62,35 @@ public class SexcoinBlockChain extends BlockChain {
     	// for some reason sexcoin has got a rogue block, keep moving....
     	//if(storedPrev.getHeight() == 580550) { return; }
     	
+    	Integer[] badDiffBlocks={ 580551, 580598, 580599, 580600 };
+    	ArrayList<Integer> problemBlocks = new ArrayList<Integer>(Arrays.asList(badDiffBlocks));
     	
         BigInteger newDifficulty;
+        Block prev = storedPrev.getHeader();
         int currentHeight=storedPrev.getHeight() + 1;
-        log.info("Difficulty Transition Check @ " + currentHeight);
+        //log.info("Difficulty Transition Check @ " + currentHeight);
     	//if ((storedPrev.getHeight()+1) > 5400) {
         if ((storedPrev.getHeight()+1) > 571999) {
-    		//CheckpointManager manager = CheckpointManager.getCheckpointManager();
+    		CheckpointManager manager = CheckpointManager.getCheckpointManager();
     		long currentTime = System.currentTimeMillis() / 1000L;
-    		//if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
-    		//	log.info("Block before latest checkpoint, difficulty not checked");
-    		//	return;
-    		//}
+    		if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
+    			log.info("Block before latest checkpoint, difficulty not checked");
+    			return;
+    		}
+    		//if(currentHeight > 200000 ) { return; } // Until I can fix the gravity well.
+    		//if(storedPrev.getHeight() < 831000 ){ return; } // Don't check these on initial download
+    		log.info("Current Height :" + currentHeight);
+    		if( problemBlocks.contains(Integer.valueOf(currentHeight)) ){ 
+    			log.info("Problem block! (" + currentHeight + ")");
+    			return;
+    		}
+    		
     		if(!kgw.isNativeLibraryLoaded())
-    		    newDifficulty = gravityWellDiff(storedPrev, nextBlock, params.getKgwParams());
+    		    newDifficulty = gravityWellDiff(storedPrev, nextBlock, params.getKgwParams(), prev.getTimeSeconds());
     		else
     		    newDifficulty = gravityWellDiff_N(storedPrev, nextBlock, params.getKgwParams());
         } else {
     	
-	        Block prev = storedPrev.getHeader();
-	        
 	        // Is this supposed to be a difficulty transition point?
 	        if ((storedPrev.getHeight() + 1) % params.getInterval(currentHeight) != 0) {
 	
@@ -105,6 +116,7 @@ public class SexcoinBlockChain extends BlockChain {
 	        StoredBlock cursor = blockStore.get(prev.getHash());
 	
 	        int goBack = params.getRetargetBlockCount(cursor,currentHeight);
+	        log.info("Current Height: " + currentHeight);
 	        log.info("goBack = " + goBack);
 	        for (int i = 0; i < goBack; i++) {
 	            if (cursor == null) {
@@ -184,8 +196,8 @@ public class SexcoinBlockChain extends BlockChain {
        
     }
 
-    private BigInteger gravityWellDiff(StoredBlock storedPrev, Block nextBlock, KGWParams kgwParams) throws BlockStoreException {
-        //if(storedPrev.getHeight() == 580550 ) { return BigInteger.valueOf(0); }
+    private BigInteger gravityWellDiff(StoredBlock storedPrev, Block nextBlock, KGWParams kgwParams, long prevTime) throws BlockStoreException {
+
     	if ((storedPrev == null) ||  (storedPrev.getHeight() == 0) ||  (storedPrev.getHeight() < kgwParams.pastBlocksMin)) 
         {
         	log.info("KGW short circuit...returning proof of work limit...");
@@ -200,8 +212,11 @@ public class SexcoinBlockChain extends BlockChain {
     	double EventHorizonDeviation;
     	double	EventHorizonDeviationFast;
     	double	EventHorizonDeviationSlow;
-
+    	
     	StoredBlock blockReading = storedPrev;
+    	Block blockLastSolved = blockReading.getHeader();
+    	long latestBlockTime = blockLastSolved.getTimeSeconds();
+    	
     	for (int i = 1; ((blockReading != null) && (blockReading.getHeight() > 0)); i++) {
     		if ((kgwParams.pastBlocksMax > 0) && (i > kgwParams.pastBlocksMax )) { break; }
     		PastBlocksMass++;
@@ -215,9 +230,22 @@ public class SexcoinBlockChain extends BlockChain {
     		}
     		PastDifficultyAveragePrev = PastDifficultyAverage;
     		
+    		if( latestBlockTime < b.getTimeSeconds()){
+    			if(blockReading.getHeight() > SexcoinParams.getFixKgwTimewarpHeight())
+    				latestBlockTime = b.getTimeSeconds();
+    		}
+    		
+    		
     		PastRateActualSeconds			= storedPrev.getHeader().getTimeSeconds() - b.getTimeSeconds();
     		PastRateTargetSeconds			= kgwParams.blocksTargetSpacing * PastBlocksMass;
     		PastRateAdjustmentRatio			= 1.0;
+    		
+    		if(storedPrev.getHeight() > SexcoinParams.getFixKgwTimewarpHeight()){
+    			if(PastRateActualSeconds < 1) { PastRateActualSeconds = 1; }
+    		}else{
+    			if(PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
+    		}
+    		
     		if (PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
     		if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
     			PastRateAdjustmentRatio		= (double)PastRateTargetSeconds / (double)PastRateActualSeconds;
