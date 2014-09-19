@@ -1470,6 +1470,8 @@ public class Peer extends PeerSocketHandler {
      */
     public void setBloomFilter(BloomFilter filter) {
         checkNotNull(filter, "Clearing filters is not currently supported");
+        //return;
+        /* --JSC */
         final VersionMessage ver = vPeerVersionMessage;
         if (ver == null || !ver.isBloomFilteringSupported())
             return;
@@ -1478,6 +1480,7 @@ public class Peer extends PeerSocketHandler {
         log.info("{}: Sending Bloom filter{}", this, shouldQueryMemPool ? " and querying mempool" : "");
         sendMessage(filter);
         sendMessage(new MemoryPoolMessage());
+        
     }
 
     /**

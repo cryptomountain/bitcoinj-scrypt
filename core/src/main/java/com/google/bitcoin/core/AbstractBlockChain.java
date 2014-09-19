@@ -799,6 +799,7 @@ public abstract class AbstractBlockChain {
      */
     protected void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
         checkState(lock.isHeldByCurrentThread());
+        log.info("Using AbstractBlockChain....");
         Block prev = storedPrev.getHeader();
         
         // Is this supposed to be a difficulty transition point?

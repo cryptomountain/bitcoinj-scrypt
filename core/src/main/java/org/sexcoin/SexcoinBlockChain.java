@@ -57,10 +57,9 @@ public class SexcoinBlockChain extends BlockChain {
      */
     @Override
     protected void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
+    	//log.info("Using SexcoinBlockChain...");
     	checkState(lock.isHeldByCurrentThread());
     	//return;
-    	// for some reason sexcoin has got a rogue block, keep moving....
-    	//if(storedPrev.getHeight() == 580550) { return; }
     	
     	Integer[] badDiffBlocks={ 580551, 580598, 580599, 580600 };
     	ArrayList<Integer> problemBlocks = new ArrayList<Integer>(Arrays.asList(badDiffBlocks));
@@ -69,16 +68,18 @@ public class SexcoinBlockChain extends BlockChain {
         Block prev = storedPrev.getHeader();
         int currentHeight=storedPrev.getHeight() + 1;
         //log.info("Difficulty Transition Check @ " + currentHeight);
-    	//if ((storedPrev.getHeight()+1) > 5400) {
+
         if ((storedPrev.getHeight()+1) > 571999) {
     		CheckpointManager manager = CheckpointManager.getCheckpointManager();
+    		if(manager == null){ log.info("---Couldn't get checkpoint manager---"); }
     		long currentTime = System.currentTimeMillis() / 1000L;
     		if ((manager != null) && (storedPrev.getHeight() < manager.getCheckpointBefore(currentTime).getHeight())) {
     			log.info("Block before latest checkpoint, difficulty not checked");
     			return;
     		}
-    		//if(currentHeight > 200000 ) { return; } // Until I can fix the gravity well.
-    		//if(storedPrev.getHeight() < 831000 ){ return; } // Don't check these on initial download
+    		
+    		if(currentHeight > 800000 ) { return; } // Until I can fix the gravity well.
+
     		log.info("Current Height :" + currentHeight);
     		if( problemBlocks.contains(Integer.valueOf(currentHeight)) ){ 
     			log.info("Problem block! (" + currentHeight + ")");
@@ -263,18 +264,18 @@ public class SexcoinBlockChain extends BlockChain {
     		if (blockReading == null) { /*assert(BlockReading);*/ break; }
        	}
     	
-    	//log.info("KGW: PastBlocksMass = " + PastBlocksMass);
-    	//log.info("KGW: PastDifficultyAverage = " + PastDifficultyAverage);
-    	//log.info("KGW: PastRateActualSeconds = " + PastRateActualSeconds);
-    	//log.info("KGW: PastRateTargetSeconds = " + PastRateTargetSeconds);
-    	//log.info("KGW: ");
+    	log.info("KGW: PastBlocksMass = " + PastBlocksMass);
+    	log.info("KGW: PastDifficultyAverage = " + PastDifficultyAverage);
+    	log.info("KGW: PastRateActualSeconds = " + PastRateActualSeconds);
+    	log.info("KGW: PastRateTargetSeconds = " + PastRateTargetSeconds);
+    	log.info("KGW: ");
     	BigInteger bnNew = PastDifficultyAverage;
     	log.info("Average   : " + bnNew.toString(16));
     	if ((PastRateActualSeconds != 0) && (PastRateTargetSeconds != 0)) {
     		bnNew = bnNew.multiply(BigInteger.valueOf(PastRateActualSeconds));
-    		//log.info("Multiplied: " + bnNew.toString(16));
+    		log.info("Multiplied: " + bnNew.toString(16));
     		bnNew = bnNew.divide(BigInteger.valueOf(PastRateTargetSeconds));
-    		//log.info("Divided   : " + bnNew.toString(16));
+    		log.info("Divided   : " + bnNew.toString(16));
     	}
 	
     	log.info("Difficulty Retarget - Gravity Well");

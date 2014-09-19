@@ -41,7 +41,11 @@ public class SexcoinParams extends NetworkParameters {
 		return kgwParams;
 	}
     
-    @Override
+    public static int getFixKgwTimewarpHeight() {
+		return FIX_KGW_TIMEWARP_HEIGHT;
+	}
+
+	@Override
     public int getTargetTimespan(){
     	return this.targetTimespan;
     }
@@ -49,7 +53,7 @@ public class SexcoinParams extends NetworkParameters {
     public int getTargetTimespan(int blockHeight){
     	if( blockHeight <= 155000 ) return this.targetTimespan;
     	if( blockHeight  > 155000 && blockHeight < 572001) return this.targetTimespan_1;
-    	if( blockHeight >= 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.targetTimespan_2;
+    	if( blockHeight >= 572000 && blockHeight < getFixKgwTimewarpHeight() ) return this.targetTimespan_2;
     	
     	return targetKGWTimespan;
     	
@@ -58,7 +62,7 @@ public class SexcoinParams extends NetworkParameters {
     public int getInterval(int blockHeight){
     	if( blockHeight <= 155000 ) return this.interval;
     	if( blockHeight  > 155000 && blockHeight < 572000) return this.interval_1;
-    	if( blockHeight >= 572000 && blockHeight < FIX_KGW_TIMEWARP_HEIGHT ) return this.interval_2;
+    	if( blockHeight >= 572000 && blockHeight < getFixKgwTimewarpHeight() ) return this.interval_2;
     	return this.interval_2;
     	
     }

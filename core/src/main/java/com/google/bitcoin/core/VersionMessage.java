@@ -315,6 +315,7 @@ public class VersionMessage extends Message {
      * Returns true if the clientVersion field is >= FilteredBlock.MIN_PROTOCOL_VERSION. If it is then Bloom filtering
      * is available and the memory pool of the remote peer will be queried when the downloadData property is true.
      */
+    // --JSC
     public boolean isBloomFilteringSupported() {
     	//if (SexcoinParams.ID_SEXCOIN.equals(params.getId())) {
         //    return clientVersion >= FilteredBlock.MIN_BLOOM_SUPPORT;
