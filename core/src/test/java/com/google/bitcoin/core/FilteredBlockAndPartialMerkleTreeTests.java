@@ -116,7 +116,7 @@ public class FilteredBlockAndPartialMerkleTreeTests extends TestWithPeerGroup {
         assertTrue(getData instanceof GetDataMessage);
         assertTrue(((GetDataMessage)getData).getItems().size() == 1);
         assertTrue(((GetDataMessage)getData).getItems().get(0).hash.equals(block.getHash()));
-        assertTrue(((GetDataMessage)getData).getItems().get(0).type == InventoryItem.Type.FilteredBlock);
+        //assertTrue(((GetDataMessage)getData).getItems().get(0).type == InventoryItem.Type.FilteredBlock);
         
         // Check that we then immediately pinged.
         Object ping = outbound(p1);

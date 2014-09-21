@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.ArrayList;
 import org.sexcoin.SexcoinParams;
 import static com.google.common.base.Preconditions.checkState;
+/**
+ * @author Andreas Schildbach, Litecoin Dev Team, Lavajumper
+ */
 
 /**
  * <p>A BlockChain implements the <i>simplified payment verification</i> mode of the Bitcoin protocol. It is the right
@@ -284,10 +287,10 @@ public class SexcoinBlockChain extends BlockChain {
     	log.info("Before: " + storedPrev.getHeader().getDifficultyTargetAsInteger().toString(16));
     	log.info("After: " + bnNew.toString(16));
 
-    	
-    	if (bnNew.compareTo(params.getProofOfWorkLimit()) == 1) { 
+    	BigInteger bnPOW = params.getProofOfWorkLimit();
+    	if (bnNew.compareTo(bnPOW) == 1) { 
     		log.info("KGW - Proof of work limit hit..."); 
-    		bnNew = params.getProofOfWorkLimit(); 
+    		bnNew = bnPOW; 
     	}
 //    	
 //        /// debug print

@@ -1,8 +1,8 @@
 package org.sexcoin;
 
 import com.google.bitcoin.core.*;
-import com.google.bitcoin.core.Wallet.SendRequest;
-import com.google.bitcoin.core.Wallet.SendResult;
+//import com.google.bitcoin.core.Wallet.SendRequest;
+//import com.google.bitcoin.core.Wallet.SendResult;
 import com.google.bitcoin.crypto.KeyCrypter;
 
 import java.math.BigInteger;
@@ -13,7 +13,10 @@ import java.math.BigInteger;
  * An extension of BitcoinJ's wallet to use Litecoin's fee structure by default
  */
 public class SexcoinWallet extends Wallet {
-    public SexcoinWallet(NetworkParameters params) {
+
+	private static final long serialVersionUID = 9088914005059947541L;
+
+	public SexcoinWallet(NetworkParameters params) {
         super(params);
     }
 

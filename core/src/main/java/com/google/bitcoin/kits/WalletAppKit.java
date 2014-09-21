@@ -223,7 +223,8 @@ public class WalletAppKit extends AbstractIdleService {
                 for (PeerAddress addr : peerAddresses) vPeerGroup.addAddress(addr);
                 peerAddresses = null;
             } else {
-                //vPeerGroup.addPeerDiscovery(new DnsDiscovery(params));
+                //--JSC 
+            	//vPeerGroup.addPeerDiscovery(new DnsDiscovery(params));
             	//vPeerGroup.addPeerDiscovery(new SexcoinIrcDiscovery("#sexcoin00"));
             }
             vChain.addWallet(vWallet);

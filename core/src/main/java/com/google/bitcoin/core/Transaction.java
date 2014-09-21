@@ -617,7 +617,7 @@ public class Transaction extends ChildMessage implements Serializable {
                 s.append(scriptPubKey);
                 s.append(" ");
                 s.append(bitcoinValueToFriendlyString(out.getValue()));
-                s.append(" AUR");
+                s.append(" SXC");
                 if (!out.isAvailableForSpending()) {
                     s.append(" Spent");
                 }

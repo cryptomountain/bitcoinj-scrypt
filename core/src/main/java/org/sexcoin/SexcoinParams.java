@@ -1,7 +1,7 @@
 package org.sexcoin;
 
 import com.google.bitcoin.core.*;
-import com.google.bitcoin.core.NetworkParameters.KGWParams;
+//import com.google.bitcoin.core.NetworkParameters.KGWParams;
 import com.google.bitcoin.script.Script;
 import com.google.bitcoin.script.ScriptOpCodes;
 import com.lambdaworks.crypto.SCrypt;
@@ -15,6 +15,10 @@ import java.security.GeneralSecurityException;
 import static com.google.common.base.Preconditions.checkState;
 
 public class SexcoinParams extends NetworkParameters {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4720786260636487008L;
 	/**
 	 * Parameters for the testnet, a separate public instance of Bitcoin that has relaxed rules suitable for development
 	 * and testing of applications and new Bitcoin versions.
@@ -157,7 +161,7 @@ public class SexcoinParams extends NetworkParameters {
 	            
 	            return getInterval(blockHeight);
 	        } else {
-	            //Logger.getLogger("wallet_ltc").info("Genesis LTC retarget");
+	            //Logger.getLogger("wallet_sxc").info("Genesis SXC retarget");
 	            return getInterval(blockHeight) - 1;
 	        }
 	    }

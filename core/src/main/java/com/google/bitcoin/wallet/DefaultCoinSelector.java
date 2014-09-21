@@ -1,6 +1,6 @@
 package com.google.bitcoin.wallet;
 
-import com.google.bitcoin.core.NetworkParameters;
+//import com.google.bitcoin.core.NetworkParameters;
 import com.google.bitcoin.core.Transaction;
 import com.google.bitcoin.core.TransactionConfidence;
 import com.google.bitcoin.core.TransactionOutput;
